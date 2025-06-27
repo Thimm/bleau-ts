@@ -259,12 +259,12 @@ export default function Home() {
               <p className="text-xs text-rock-500">
                 Route data from{' '}
                 <a 
-                  href="https://bleau.info" 
+                  href="https://boolder.com" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-rock-400 hover:text-rock-300 transition-colors"
                 >
-                  Bleau.info
+                  Boolder.com
                 </a>
                 {' '}under{' '}
                 <a 
