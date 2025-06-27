@@ -9,6 +9,8 @@ import { ProjectList } from '@/components/ProjectList'
 import { gradeToNumeric } from '@/utils/gradeUtils'
 import type { Route, FilterState } from '@/types'
 import type { RouteMapRef } from '@/components/RouteMap'
+import { AnimatePresence, motion } from 'framer-motion'
+import { MapModal } from '@/components/MapModal'
 
 // Dynamic import for Leaflet map
 const RouteMap = dynamic(() => import('@/components/RouteMap').then(mod => ({ default: mod.RouteMap })), {
@@ -31,7 +33,7 @@ export default function Home() {
     steepness: [],
     areas: [],
     sitStart: 'all',
-    popularityRange: [20, 100],
+    popularityRange: [0, 30000],
     showAreas: true,
     search: ''
   })
@@ -42,11 +44,18 @@ export default function Home() {
   const [projects, setProjects] = useState<Set<string>>(new Set())
   const [showFilters, setShowFilters] = useState(false)
   const [showProjects, setShowProjects] = useState(false)
+  const [showMobileSearch, setShowMobileSearch] = useState(false)
   const [loading, setLoading] = useState(true)
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
   const [mapInstance, setMapInstance] = useState<any>(null)
+  const [routeForMapModal, setRouteForMapModal] = useState<Route | null>(null)
   
   const mapRef = useRef<RouteMapRef>(null)
+
+  const handleApplyFilters = (newFilters: FilterState) => {
+    setFilters(newFilters)
+    setShowFilters(false)
+  }
 
   // This effect debounces the filter state.
   useEffect(() => {
@@ -149,9 +158,7 @@ export default function Home() {
   }
 
   const handleShowOnMap = (route: Route) => {
-    if (mapInstance) {
-      mapInstance.setView([route.latitude, route.longitude], 16)
-    }
+    setRouteForMapModal(route)
   }
 
   const projectRoutes = useMemo(() => {
@@ -181,18 +188,31 @@ export default function Home() {
         routes={routes}
         searchValue={filters.search} // The input is controlled by the "live" filters
         onSearchChange={(value) => setFilters(prev => ({ ...prev, search: value }))}
+        showMobileSearch={showMobileSearch}
+        onToggleMobileSearch={() => setShowMobileSearch(!showMobileSearch)}
       />
       
       <div className="flex flex-1 overflow-hidden">
         {/* Project List (Left Panel) */}
-        {showProjects && (
-          <ProjectList
-            routes={projectRoutes}
-            projects={projects}
-            onToggleProject={toggleProject}
-            onClose={() => setShowProjects(false)}
-          />
-        )}
+        <AnimatePresence>
+          {showProjects && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/60 z-40"
+                onClick={() => setShowProjects(false)}
+              />
+              <ProjectList
+                routes={projectRoutes}
+                projects={projects}
+                onToggleProject={toggleProject}
+                onClose={() => setShowProjects(false)}
+              />
+            </>
+          )}
+        </AnimatePresence>
 
         {/* Main Content */}
         <main className="flex-1 flex flex-col overflow-y-auto">
@@ -213,17 +233,6 @@ export default function Home() {
           )}
           
           <div className="bg-rock-900 flex-grow">
-            {isLimited && (
-              <div className="bg-yellow-900/20 border border-yellow-600/30 rounded-lg mx-4 mt-4 p-3">
-                <div className="flex items-center space-x-2 text-yellow-200">
-                  <div className="text-yellow-400">⚡</div>
-                  <div className="text-sm">
-                    <strong>Performance Mode:</strong> Showing top {filteredRoutes.length} of {totalFiltered.toLocaleString()} routes. 
-                    Use filters to narrow down results.
-                  </div>
-                </div>
-              </div>
-            )}
             <RouteList
               routes={filteredRoutes} // The list is controlled by the debounced, filtered routes
               projects={projects}
@@ -234,15 +243,32 @@ export default function Home() {
         </main>
         
         {/* Filter Panel (Right Panel) */}
-        {showFilters && (
-          <FilterPanel
-            routes={routes}
-            filters={filters}
-            onFiltersChange={setFilters}
-            onClose={() => setShowFilters(false)}
-          />
-        )}
+        <AnimatePresence>
+          {showFilters && (
+            <>
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/60 z-40"
+                onClick={() => setShowFilters(false)}
+              />
+              <FilterPanel
+                routes={routes}
+                initialFilters={filters}
+                onApplyFilters={handleApplyFilters}
+                onClose={() => setShowFilters(false)}
+              />
+            </>
+          )}
+        </AnimatePresence>
       </div>
+      <MapModal 
+        route={routeForMapModal}
+        areas={areas}
+        isOpen={!!routeForMapModal}
+        onClose={() => setRouteForMapModal(null)}
+      />
     </div>
   )
 } 

@@ -24,8 +24,6 @@ export const viewport = {
   width: 'device-width',
   initialScale: 1,
   minimumScale: 1,
-  shrinkToFit: 'no',
-  userScalable: 'no',
   viewportFit: 'cover'
 }
 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { XMarkIcon, TrashIcon, ShareIcon, PlayIcon } from '@heroicons/react/24/outline'
 import { BookmarkIcon } from '@heroicons/react/24/solid'
 import { motion } from 'framer-motion'
@@ -13,8 +13,15 @@ interface ProjectListProps {
 }
 
 export function ProjectList({ routes, projects, onToggleProject, onClose }: ProjectListProps) {
+  const [isClient, setIsClient] = useState(false)
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null)
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false)
+
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  const canShare = isClient && !!navigator.share
 
   const projectRoutes = routes.filter(route => projects.has(route.bleau_info_id))
   
@@ -46,6 +53,22 @@ export function ProjectList({ routes, projects, onToggleProject, onClose }: Proj
     a.download = `fontainebleau-projects-${new Date().toISOString().split('T')[0]}.csv`
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+  const handleShare = () => {
+    if (navigator.share) {
+      const shareData = {
+        title: 'My Fontainebleau Projects',
+        text: 'Check out my bouldering projects in Fontainebleau:\n\n' +
+          projectRoutes
+            .map(route => `- ${route.name} (${route.grade}) in ${route.area_name}`)
+            .join('\n'),
+        url: window.location.href
+      }
+      navigator.share(shareData)
+        .then(() => console.log('Successfully shared'))
+        .catch((error) => console.error('Error sharing:', error))
+    }
   }
 
   const getGradeColor = (grade: string) => {
@@ -81,22 +104,23 @@ export function ProjectList({ routes, projects, onToggleProject, onClose }: Proj
       initial={{ x: '-100%' }}
       animate={{ x: 0 }}
       exit={{ x: '-100%' }}
-      className="h-full w-full sm:w-96 bg-rock-800 border-r border-rock-700 overflow-y-auto shrink-0"
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      className="fixed top-0 left-0 h-full w-full sm:w-96 bg-rock-800 border-r border-rock-700 z-50 flex flex-col"
     >
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center space-x-2">
-            <BookmarkIcon className="w-5 h-5 text-yellow-500" />
-            <h2 className="text-xl font-bold">My Projects</h2>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-rock-700 rounded-lg"
-          >
-            <XMarkIcon className="w-5 h-5" />
-          </button>
+      <div className="p-4 flex items-center justify-between mb-6 shrink-0 border-b border-rock-700">
+        <div className="flex items-center space-x-2">
+          <BookmarkIcon className="w-5 h-5 text-yellow-500" />
+          <h2 className="text-xl font-bold">My Projects</h2>
         </div>
+        <button
+          onClick={onClose}
+          className="p-2 hover:bg-rock-700 rounded-lg"
+        >
+          <XMarkIcon className="w-5 h-5" />
+        </button>
+      </div>
 
+      <div className="overflow-y-auto flex-grow p-4">
         {projectRoutes.length === 0 ? (
           <div className="text-center py-8">
             <BookmarkIcon className="w-16 h-16 text-rock-600 mx-auto mb-4" />
@@ -112,13 +136,23 @@ export function ProjectList({ routes, projects, onToggleProject, onClose }: Proj
                 {projectRoutes.length} route{projectRoutes.length !== 1 ? 's' : ''}
               </p>
               <div className="flex space-x-2">
-                <button
-                  onClick={exportProjects}
-                  className="btn-secondary text-xs flex items-center space-x-1"
-                >
-                  <ShareIcon className="w-4 h-4" />
-                  <span>Export</span>
-                </button>
+                {canShare ? (
+                  <button
+                    onClick={handleShare}
+                    className="btn-secondary text-xs flex items-center space-x-1"
+                  >
+                    <ShareIcon className="w-4 h-4" />
+                    <span>Share</span>
+                  </button>
+                ) : (
+                  <button
+                    onClick={exportProjects}
+                    className="btn-secondary text-xs flex items-center space-x-1"
+                  >
+                    <ShareIcon className="w-4 h-4" />
+                    <span>Export</span>
+                  </button>
+                )}
                 <button
                   onClick={clearAllProjects}
                   className="btn-secondary text-xs flex items-center space-x-1 hover:bg-red-600"

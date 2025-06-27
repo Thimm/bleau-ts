@@ -47,11 +47,13 @@ function MapBounds({ routes }: { routes: Route[] }) {
   const map = useMap()
   
   useEffect(() => {
-    if (routes.length > 0) {
+    if (routes.length > 1) {
       const bounds = new LatLngBounds(
         routes.map(route => [route.latitude, route.longitude])
       )
       map.fitBounds(bounds, { padding: [20, 20] })
+    } else if (routes.length === 1) {
+      map.setView([routes[0].latitude, routes[0].longitude], 16)
     }
   }, [routes, map])
   
@@ -207,10 +209,16 @@ export const RouteMap = forwardRef<RouteMapRef, RouteMapProps>(
               const isProject = projects.has(route.bleau_info_id)
               
               return (
-                <Marker
+                <CircleMarker
                   key={route.id}
-                  position={[route.latitude, route.longitude]}
-                  icon={isProject ? projectIcon : defaultIcon}
+                  center={[route.latitude, route.longitude]}
+                  radius={8}
+                  pathOptions={{
+                    color: isProject ? '#f59e0b' : '#3b82f6',
+                    weight: 2,
+                    fillColor: isProject ? '#f59e0b' : '#3b82f6',
+                    fillOpacity: 0.7
+                  }}
                 >
                   <Popup>
                     <div className="text-black min-w-[200px]">
@@ -268,7 +276,7 @@ export const RouteMap = forwardRef<RouteMapRef, RouteMapProps>(
                       )}
                     </div>
                   </Popup>
-                </Marker>
+                </CircleMarker>
               )
             })}
           </MarkerClusterGroup>

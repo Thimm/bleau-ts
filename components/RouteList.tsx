@@ -65,12 +65,6 @@ export function RouteList({ routes, projects, onToggleProject, onShowOnMap }: Ro
 
   return (
     <div className="p-4">
-      <div className="mb-4">
-        <h2 className="text-xl font-bold text-white">
-          {routes.length.toLocaleString()} Routes Found
-        </h2>
-      </div>
-      
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
         {routes.map((route) => {
           const isProject = projects.has(route.bleau_info_id)
@@ -137,7 +131,6 @@ export function RouteList({ routes, projects, onToggleProject, onShowOnMap }: Ro
                     <span className={`font-semibold ${getPopularityColor(route.popularity)}`}>
                       {route.popularity}
                     </span>
-                    <span className="text-rock-400 text-xs">/100</span>
                   </div>
                 </div>
               </div>

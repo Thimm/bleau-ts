@@ -77,23 +77,23 @@ export function MediaModal({ route, isOpen, onClose }: MediaModalProps) {
               </div>
             </div>
 
-            <div className="p-4">
+            <div className="py-4">
               {loading && (
-                <div className="text-center py-8">
+                <div className="text-center py-8 px-4">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-4"></div>
                   <p className="text-rock-300">Loading media...</p>
                 </div>
               )}
 
               {error && (
-                <div className="text-center py-8">
+                <div className="text-center py-8 px-4">
                   <p className="text-red-400 mb-2">Error loading media</p>
                   <p className="text-rock-400 text-sm">{error}</p>
                 </div>
               )}
 
               {!loading && !error && !hasMedia && (
-                <div className="text-center py-8">
+                <div className="text-center py-8 px-4">
                   <div className="text-rock-600 mb-4">
                     <PhotoIcon className="w-16 h-16 mx-auto" />
                   </div>
@@ -137,7 +137,7 @@ export function MediaModal({ route, isOpen, onClose }: MediaModalProps) {
               )}
 
               {route?.bleau_info_id && (
-                <div className="mt-6 pt-4 border-t border-rock-700">
+                <div className="mt-6 pt-4 border-t border-rock-700 px-4">
                   <a
                     href={`https://bleau.info/${route.area_name.toLowerCase()}/${route.bleau_info_id}.html`}
                     target="_blank"

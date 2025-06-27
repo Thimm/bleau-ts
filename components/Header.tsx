@@ -1,5 +1,5 @@
 import React from 'react'
-import { AdjustmentsHorizontalIcon, BookmarkIcon, MapIcon } from '@heroicons/react/24/outline'
+import { AdjustmentsHorizontalIcon, BookmarkIcon, MapIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { SearchAutocomplete } from './SearchAutocomplete'
 import type { Route } from '@/types'
 
@@ -13,6 +13,8 @@ interface HeaderProps {
   routes: Route[]
   searchValue: string
   onSearchChange: (value: string) => void
+  showMobileSearch: boolean
+  onToggleMobileSearch: () => void
 }
 
 export function Header({ 
@@ -24,7 +26,9 @@ export function Header({
   isLimited,
   routes,
   searchValue,
-  onSearchChange
+  onSearchChange,
+  showMobileSearch,
+  onToggleMobileSearch
 }: HeaderProps) {
   return (
     <header className="bg-rock-800 border-b border-rock-700 px-4 py-3 sticky top-0 z-[1000]">
@@ -32,7 +36,7 @@ export function Header({
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
             <img src="/boulder_logo.png" alt="Logo" className="w-8 h-8 rounded" />
-            <h1 className="text-xl font-bold text-white">Fontainebleau</h1>
+            <h1 className="text-xl font-bold text-white hidden sm:block">Fontainebleau</h1>
           </div>
         </div>
         
@@ -46,7 +50,7 @@ export function Header({
         </div>
         
         <div className="flex items-center space-x-2">
-          <div className="text-sm text-rock-300 mr-4">
+          <div className="text-sm text-rock-300 mr-4 hidden sm:block">
             {isLimited ? (
               <div className="text-center">
                 <div>{displayedCount?.toLocaleString()} of {filteredCount.toLocaleString()}</div>
@@ -56,6 +60,13 @@ export function Header({
               <div>{filteredCount.toLocaleString()} routes</div>
             )}
           </div>
+
+          <button
+            onClick={onToggleMobileSearch}
+            className="btn-secondary flex items-center space-x-2 md:hidden"
+          >
+            <MagnifyingGlassIcon className="w-5 h-5" />
+          </button>
           
           <button
             onClick={onToggleFilters}
@@ -79,6 +90,16 @@ export function Header({
           </button>
         </div>
       </div>
+      {showMobileSearch && (
+        <div className="mt-3 md:hidden">
+          <SearchAutocomplete
+            routes={routes}
+            value={searchValue}
+            onChange={onSearchChange}
+            placeholder="Search routes..."
+          />
+        </div>
+      )}
     </header>
   )
 } 

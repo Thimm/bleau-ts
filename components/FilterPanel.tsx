@@ -7,18 +7,40 @@ import { getAvailableGrades, gradeToNumeric, numericToGrade } from '@/utils/grad
 
 interface FilterPanelProps {
   routes: Route[]
-  filters: FilterState
-  onFiltersChange: (filters: FilterState) => void
+  initialFilters: FilterState
+  onApplyFilters: (filters: FilterState) => void
   onClose: () => void
 }
 
-export function FilterPanel({ routes, filters, onFiltersChange, onClose }: FilterPanelProps) {
+export function FilterPanel({ routes, initialFilters, onApplyFilters, onClose }: FilterPanelProps) {
+  const [localFilters, setLocalFilters] = React.useState<FilterState>(initialFilters)
+
   const availableGrades = getAvailableGrades()
   const availableSteepness = Array.from(new Set(routes.map(r => r.steepness))).sort()
   const availableAreas = Array.from(new Set(routes.map(r => r.area_name))).sort()
+  const maxPopularity = React.useMemo(() => 
+    Math.max(...routes.map(r => r.popularity || 0)), 
+  [routes])
   
   const updateFilters = (updates: Partial<FilterState>) => {
-    onFiltersChange({ ...filters, ...updates })
+    setLocalFilters({ ...localFilters, ...updates })
+  }
+
+  const handleApply = () => {
+    onApplyFilters(localFilters)
+  }
+
+  const handleReset = () => {
+    const defaultFilters: FilterState = {
+      gradeRange: [0, 34],
+      steepness: [],
+      areas: [],
+      sitStart: 'all',
+      popularityRange: [0, maxPopularity],
+      showAreas: true,
+      search: ''
+    }
+    setLocalFilters(defaultFilters)
   }
 
   return (
@@ -26,26 +48,27 @@ export function FilterPanel({ routes, filters, onFiltersChange, onClose }: Filte
       initial={{ x: '100%' }}
       animate={{ x: 0 }}
       exit={{ x: '100%' }}
-      className="h-full w-full sm:w-96 bg-rock-800 border-l border-rock-700 overflow-y-auto shrink-0"
+      transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      className="fixed top-0 right-0 h-full w-full sm:w-96 bg-rock-800 border-l border-rock-700 z-50 flex flex-col"
     >
-      <div className="p-4">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">Filters</h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-rock-700 rounded-lg"
-          >
-            <XMarkIcon className="w-5 h-5" />
-          </button>
-        </div>
+      <div className="p-4 flex items-center justify-between mb-6 shrink-0 border-b border-rock-700">
+        <h2 className="text-xl font-bold">Filters</h2>
+        <button
+          onClick={onClose}
+          className="p-2 hover:bg-rock-700 rounded-lg"
+        >
+          <XMarkIcon className="w-5 h-5" />
+        </button>
+      </div>
 
+      <div className="overflow-y-auto flex-grow p-4">
         <div className="space-y-6">
           {/* Search */}
           <div>
             <label className="block text-sm font-medium mb-3">Search Routes</label>
             <SearchAutocomplete
               routes={routes}
-              value={filters.search}
+              value={localFilters.search}
               onChange={(value) => updateFilters({ search: value })}
               placeholder="Type route name..."
             />
@@ -58,9 +81,9 @@ export function FilterPanel({ routes, filters, onFiltersChange, onClose }: Filte
               <div>
                 <label className="block text-xs text-rock-300 mb-1">Min Grade</label>
                 <select
-                  value={numericToGrade(filters.gradeRange[0])}
+                  value={numericToGrade(localFilters.gradeRange[0])}
                   onChange={(e) => updateFilters({
-                    gradeRange: [gradeToNumeric(e.target.value), filters.gradeRange[1]]
+                    gradeRange: [gradeToNumeric(e.target.value), localFilters.gradeRange[1]]
                   })}
                   className="input-primary w-full"
                 >
@@ -72,9 +95,9 @@ export function FilterPanel({ routes, filters, onFiltersChange, onClose }: Filte
               <div>
                 <label className="block text-xs text-rock-300 mb-1">Max Grade</label>
                 <select
-                  value={numericToGrade(filters.gradeRange[1])}
+                  value={numericToGrade(localFilters.gradeRange[1])}
                   onChange={(e) => updateFilters({
-                    gradeRange: [filters.gradeRange[0], gradeToNumeric(e.target.value)]
+                    gradeRange: [localFilters.gradeRange[0], gradeToNumeric(e.target.value)]
                   })}
                   className="input-primary w-full"
                 >
@@ -94,11 +117,11 @@ export function FilterPanel({ routes, filters, onFiltersChange, onClose }: Filte
                 <label key={steepness} className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={filters.steepness.includes(steepness)}
+                    checked={localFilters.steepness.includes(steepness)}
                     onChange={(e) => {
                       const newSteepness = e.target.checked
-                        ? [...filters.steepness, steepness]
-                        : filters.steepness.filter(s => s !== steepness)
+                        ? [...localFilters.steepness, steepness]
+                        : localFilters.steepness.filter(s => s !== steepness)
                       updateFilters({ steepness: newSteepness })
                     }}
                     className="mr-2 rounded border-rock-600 bg-rock-700 text-primary-600 focus:ring-primary-500"
@@ -117,11 +140,11 @@ export function FilterPanel({ routes, filters, onFiltersChange, onClose }: Filte
                 <label key={area} className="flex items-center">
                   <input
                     type="checkbox"
-                    checked={filters.areas.includes(area)}
+                    checked={localFilters.areas.includes(area)}
                     onChange={(e) => {
                       const newAreas = e.target.checked
-                        ? [...filters.areas, area]
-                        : filters.areas.filter(a => a !== area)
+                        ? [...localFilters.areas, area]
+                        : localFilters.areas.filter(a => a !== area)
                       updateFilters({ areas: newAreas })
                     }}
                     className="mr-2 rounded border-rock-600 bg-rock-700 text-primary-600 focus:ring-primary-500"
@@ -146,7 +169,7 @@ export function FilterPanel({ routes, filters, onFiltersChange, onClose }: Filte
                     type="radio"
                     name="sitStart"
                     value={option.value}
-                    checked={filters.sitStart === option.value}
+                    checked={localFilters.sitStart === option.value}
                     onChange={(e) => updateFilters({ sitStart: e.target.value as any })}
                     className="mr-2 border-rock-600 bg-rock-700 text-primary-600 focus:ring-primary-500"
                   />
@@ -159,7 +182,7 @@ export function FilterPanel({ routes, filters, onFiltersChange, onClose }: Filte
           {/* Popularity Range */}
           <div>
             <label className="block text-sm font-medium mb-3">
-              Popularity Range: {filters.popularityRange[0]} - {filters.popularityRange[1]}
+              Popularity Range: {localFilters.popularityRange[0]} - {localFilters.popularityRange[1]}
             </label>
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -167,10 +190,10 @@ export function FilterPanel({ routes, filters, onFiltersChange, onClose }: Filte
                 <input
                   type="range"
                   min="0"
-                  max="100"
-                  value={filters.popularityRange[0]}
+                  max={maxPopularity}
+                  value={localFilters.popularityRange[0]}
                   onChange={(e) => updateFilters({
-                    popularityRange: [parseInt(e.target.value), filters.popularityRange[1]]
+                    popularityRange: [parseInt(e.target.value), localFilters.popularityRange[1]]
                   })}
                   className="w-full"
                 />
@@ -180,10 +203,10 @@ export function FilterPanel({ routes, filters, onFiltersChange, onClose }: Filte
                 <input
                   type="range"
                   min="0"
-                  max="100"
-                  value={filters.popularityRange[1]}
+                  max={maxPopularity}
+                  value={localFilters.popularityRange[1]}
                   onChange={(e) => updateFilters({
-                    popularityRange: [filters.popularityRange[0], parseInt(e.target.value)]
+                    popularityRange: [localFilters.popularityRange[0], parseInt(e.target.value)]
                   })}
                   className="w-full"
                 />
@@ -197,31 +220,30 @@ export function FilterPanel({ routes, filters, onFiltersChange, onClose }: Filte
             <label className="flex items-center">
               <input
                 type="checkbox"
-                checked={filters.showAreas}
+                checked={localFilters.showAreas}
                 onChange={(e) => updateFilters({ showAreas: e.target.checked })}
                 className="mr-2 rounded border-rock-600 bg-rock-700 text-primary-600 focus:ring-primary-500"
               />
               <span className="text-sm">Show Area Boundaries</span>
             </label>
           </div>
-
-          {/* Clear All */}
-          <div className="pt-4 border-t border-rock-700">
-            <button
-              onClick={() => updateFilters({
-                gradeRange: [0, 34],
-                steepness: [],
-                areas: [],
-                sitStart: 'all',
-                popularityRange: [0, 100],
-                showAreas: true,
-                search: ''
-              })}
-              className="w-full btn-secondary"
-            >
-              Clear All Filters
-            </button>
-          </div>
+        </div>
+      </div>
+      
+      <div className="p-4 shrink-0 border-t border-rock-700">
+        <div className="flex space-x-2">
+          <button
+            onClick={handleReset}
+            className="w-full btn-secondary"
+          >
+            Reset
+          </button>
+          <button
+            onClick={handleApply}
+            className="w-full btn-primary"
+          >
+            Apply Filters
+          </button>
         </div>
       </div>
     </motion.div>
