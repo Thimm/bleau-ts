@@ -113,6 +113,20 @@ export default function Home() {
     }
   }, [])
 
+  // Load filters from localStorage on initial render
+  useEffect(() => {
+    try {
+      const savedFilters = window.localStorage.getItem('filters')
+      if (savedFilters) {
+        const parsedFilters = JSON.parse(savedFilters)
+        setFilters(parsedFilters)
+        setDebouncedFilters(parsedFilters)
+      }
+    } catch (error) {
+      console.error('Error reading filters from localStorage', error)
+    }
+  }, [])
+
   // Save projects to localStorage whenever they change
   useEffect(() => {
     if (isInitialMount.current) {
@@ -125,6 +139,19 @@ export default function Home() {
       }
     }
   }, [projects])
+
+  // Save filters to localStorage whenever they change
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+    } else {
+      try {
+        window.localStorage.setItem('filters', JSON.stringify(filters))
+      } catch (error) {
+        console.error('Error saving filters to localStorage', error)
+      }
+    }
+  }, [filters])
 
   // The expensive filtering logic now depends on the debounced filters.
   const { filteredRoutes, totalFiltered, isLimited } = useMemo(() => {
