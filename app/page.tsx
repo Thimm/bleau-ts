@@ -1,29 +1,14 @@
 'use client'
 
 import React, { useState, useEffect, useMemo, useRef } from 'react'
-import dynamic from 'next/dynamic'
 import { FilterPanel } from '@/components/FilterPanel'
 import { RouteList } from '@/components/RouteList'
 import { Header } from '@/components/Header'
 import { ProjectList } from '@/components/ProjectList'
 import { gradeToNumeric } from '@/utils/gradeUtils'
 import type { Route, FilterState } from '@/types'
-import type { RouteMapRef } from '@/components/RouteMap'
 import { AnimatePresence, motion } from 'framer-motion'
 import { MapModal } from '@/components/MapModal'
-
-// Dynamic import for Leaflet map
-const RouteMap = dynamic(() => import('@/components/RouteMap').then(mod => ({ default: mod.RouteMap })), {
-  ssr: false,
-  loading: () => (
-    <div className="h-full w-full flex items-center justify-center bg-rock-800">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto"></div>
-        <p className="mt-2 text-rock-300">Loading map...</p>
-      </div>
-    </div>
-  )
-})
 
 export default function Home() {
   const [routes, setRoutes] = useState<Route[]>([])
@@ -45,11 +30,8 @@ export default function Home() {
   const [showProjects, setShowProjects] = useState(false)
   const [showMobileSearch, setShowMobileSearch] = useState(false)
   const [loading, setLoading] = useState(true)
-  const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
-  const [mapInstance, setMapInstance] = useState<any>(null)
   const [routesForMapModal, setRoutesForMapModal] = useState<Route[]>([])
   
-  const mapRef = useRef<RouteMapRef>(null)
   const isInitialMount = useRef(true)
 
   const handleApplyFilters = (newFilters: FilterState) => {
@@ -86,21 +68,7 @@ export default function Home() {
       console.error('Error loading data:', err)
       setLoading(false)
     })
-
-    if ('geolocation' in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords
-          setUserLocation({ lat: latitude, lng: longitude })
-          if (mapInstance) {
-            mapInstance.setView([latitude, longitude], 13)
-          }
-        },
-        (error) => console.error('Error getting location:', error),
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
-      )
-    }
-  }, [mapInstance])
+  }, [])
 
   // Load projects from localStorage on initial render
   useEffect(() => {
