@@ -31,6 +31,7 @@ export default function Home() {
   const [showMobileSearch, setShowMobileSearch] = useState(false)
   const [loading, setLoading] = useState(true)
   const [routesForMapModal, setRoutesForMapModal] = useState<Route[]>([])
+  const [filtersLoaded, setFiltersLoaded] = useState(false)
   
   const isInitialMount = useRef(true)
 
@@ -117,13 +118,17 @@ export default function Home() {
   useEffect(() => {
     try {
       const savedFilters = window.localStorage.getItem('filters')
+      console.log('Loading filters from localStorage:', savedFilters)
       if (savedFilters) {
         const parsedFilters = JSON.parse(savedFilters)
+        console.log('Parsed filters:', parsedFilters)
         setFilters(parsedFilters)
         setDebouncedFilters(parsedFilters)
       }
+      setFiltersLoaded(true)
     } catch (error) {
       console.error('Error reading filters from localStorage', error)
+      setFiltersLoaded(true)
     }
   }, [])
 
@@ -146,6 +151,7 @@ export default function Home() {
       isInitialMount.current = false
     } else {
       try {
+        console.log('Saving filters to localStorage:', filters)
         window.localStorage.setItem('filters', JSON.stringify(filters))
       } catch (error) {
         console.error('Error saving filters to localStorage', error)
@@ -319,6 +325,7 @@ export default function Home() {
                 onClick={() => setShowFilters(false)}
               />
               <FilterPanel
+                key={`filters-${filtersLoaded}`}
                 routes={routes}
                 initialFilters={filters}
                 onApplyFilters={handleApplyFilters}
