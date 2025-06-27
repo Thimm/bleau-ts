@@ -71,8 +71,10 @@ export default function Home() {
     setShowMobileSearch(!showMobileSearch)
   }
 
-  // This effect debounces the filter state.
+  // This effect debounces the filter state, but only after initial load
   useEffect(() => {
+    if (!filtersLoaded) return // Don't debounce during initial load
+    
     const handler = setTimeout(() => {
       setDebouncedFilters(filters)
     }, 300) // 300ms delay
@@ -81,7 +83,7 @@ export default function Home() {
     return () => {
       clearTimeout(handler)
     }
-  }, [filters])
+  }, [filters, filtersLoaded])
 
   // Load data and request location
   useEffect(() => {
@@ -118,10 +120,8 @@ export default function Home() {
   useEffect(() => {
     try {
       const savedFilters = window.localStorage.getItem('filters')
-      console.log('Loading filters from localStorage:', savedFilters)
       if (savedFilters) {
         const parsedFilters = JSON.parse(savedFilters)
-        console.log('Parsed filters:', parsedFilters)
         setFilters(parsedFilters)
         setDebouncedFilters(parsedFilters)
       }
@@ -151,7 +151,6 @@ export default function Home() {
       isInitialMount.current = false
     } else {
       try {
-        console.log('Saving filters to localStorage:', filters)
         window.localStorage.setItem('filters', JSON.stringify(filters))
       } catch (error) {
         console.error('Error saving filters to localStorage', error)

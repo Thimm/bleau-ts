@@ -17,7 +17,6 @@ export function FilterPanel({ routes, initialFilters, onApplyFilters, onClose }:
 
   // Update local filters when initialFilters prop changes (e.g., when loaded from localStorage)
   React.useEffect(() => {
-    console.log('FilterPanel: initialFilters changed:', initialFilters)
     setLocalFilters(initialFilters)
   }, [initialFilters])
 
