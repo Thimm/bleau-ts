@@ -30,7 +30,6 @@ const projectIcon = new Icon({
 interface RouteMapProps {
   routes: Route[]
   areas: AreasData | null
-  showAreas: boolean
   projects: Set<string>
   onToggleProject: (routeId: string) => void
   userLocation?: {lat: number, lng: number} | null
@@ -74,7 +73,7 @@ function MapReadyHandler({ onMapReady }: { onMapReady?: (map: any) => void }) {
 }
 
 export const RouteMap = forwardRef<RouteMapRef, RouteMapProps>(
-  ({ routes, areas, showAreas, projects, onToggleProject, userLocation, onMapReady, onZoomToRoute }, ref) => {
+  ({ routes, areas, projects, onToggleProject, userLocation, onMapReady, onZoomToRoute }, ref) => {
     const mapRef = useRef<any>(null)
     
     // Fontainebleau center coordinates
@@ -161,42 +160,6 @@ export const RouteMap = forwardRef<RouteMapRef, RouteMapProps>(
           />
           
           <MapBounds routes={routes} />
-          
-          {/* Area boundaries - limit for performance */}
-          {showAreas && areas?.features?.slice(0, 100).map((area, index) => {
-            const { southWestLat, southWestLon, northEastLat, northEastLon } = area.properties
-            
-            if (southWestLat && southWestLon && northEastLat && northEastLon) {
-              const bounds: [[number, number], [number, number]] = [
-                [parseFloat(southWestLat), parseFloat(southWestLon)],
-                [parseFloat(northEastLat), parseFloat(northEastLon)]
-              ]
-              
-              const colors = ['#ef4444', '#f59e0b', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6']
-              const color = colors[(area.properties.priority - 1) % colors.length]
-              
-              return (
-                <Rectangle
-                  key={`area-${index}`}
-                  bounds={bounds}
-                  pathOptions={{
-                    color,
-                    weight: 2,
-                    fillColor: color,
-                    fillOpacity: 0.1
-                  }}
-                >
-                  <Popup>
-                    <div className="text-black">
-                      <h3 className="font-bold">{area.properties.name}</h3>
-                      <p>Priority: {area.properties.priority}</p>
-                    </div>
-                  </Popup>
-                </Rectangle>
-              )
-            }
-            return null
-          })}
           
           {/* Route markers with clustering */}
           <MarkerClusterGroup

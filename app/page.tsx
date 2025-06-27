@@ -34,7 +34,6 @@ export default function Home() {
     areas: [],
     sitStart: 'all',
     popularityRange: [0, 30000],
-    showAreas: true,
     search: ''
   })
   
@@ -48,7 +47,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
   const [userLocation, setUserLocation] = useState<{lat: number, lng: number} | null>(null)
   const [mapInstance, setMapInstance] = useState<any>(null)
-  const [routeForMapModal, setRouteForMapModal] = useState<Route | null>(null)
+  const [routesForMapModal, setRoutesForMapModal] = useState<Route[]>([])
   
   const mapRef = useRef<RouteMapRef>(null)
   const isInitialMount = useRef(true)
@@ -183,8 +182,9 @@ export default function Home() {
     setProjects(newProjects)
   }
 
-  const handleShowOnMap = (route: Route) => {
-    setRouteForMapModal(route)
+  const handleShowOnMap = (route: Route | Route[]) => {
+    const routesArray = Array.isArray(route) ? route : [route]
+    setRoutesForMapModal(routesArray)
   }
 
   const projectRoutes = useMemo(() => {
@@ -235,6 +235,7 @@ export default function Home() {
                 projects={projects}
                 onToggleProject={toggleProject}
                 onClose={() => setShowProjects(false)}
+                onShowOnMap={handleShowOnMap}
               />
             </>
           )}
@@ -242,22 +243,6 @@ export default function Home() {
 
         {/* Main Content */}
         <main className="flex-1 flex flex-col overflow-y-auto">
-          {/* The map is now only rendered when the user opens the Project list. */}
-          {showProjects && (
-              <div className="h-[60vh] w-full shrink-0">
-                  <RouteMap 
-                      ref={mapRef}
-                      routes={projectRoutes}
-                      areas={areas}
-                      showAreas={filters.showAreas}
-                      projects={projects}
-                      onToggleProject={toggleProject}
-                      userLocation={userLocation}
-                      onMapReady={setMapInstance}
-                  />
-              </div>
-          )}
-          
           <div className="bg-rock-900 flex-grow">
             <RouteList
               routes={filteredRoutes} // The list is controlled by the debounced, filtered routes
@@ -290,10 +275,10 @@ export default function Home() {
         </AnimatePresence>
       </div>
       <MapModal 
-        route={routeForMapModal}
+        routes={routesForMapModal}
         areas={areas}
-        isOpen={!!routeForMapModal}
-        onClose={() => setRouteForMapModal(null)}
+        isOpen={routesForMapModal.length > 0}
+        onClose={() => setRoutesForMapModal([])}
       />
     </div>
   )

@@ -26,11 +26,7 @@ const gradeMapping: { [key: string]: number } = {
     '8b+': 23,
     '8c': 24,
     '8c+': 25,
-    '9a': 26,
-    '9a+': 27,
-    '9b': 28,
-    '9b+': 29,
-    '9c': 30,
+    '9a': 26
 }
 
 const numericToGradeMap: { [key: number]: string } = Object.fromEntries(

@@ -37,7 +37,6 @@ export function FilterPanel({ routes, initialFilters, onApplyFilters, onClose }:
       areas: [],
       sitStart: 'all',
       popularityRange: [0, maxPopularity],
-      showAreas: true,
       search: ''
     }
     setLocalFilters(defaultFilters)
@@ -63,17 +62,6 @@ export function FilterPanel({ routes, initialFilters, onApplyFilters, onClose }:
 
       <div className="overflow-y-auto flex-grow p-4">
         <div className="space-y-6">
-          {/* Search */}
-          <div>
-            <label className="block text-sm font-medium mb-3">Search Routes</label>
-            <SearchAutocomplete
-              routes={routes}
-              value={localFilters.search}
-              onChange={(value) => updateFilters({ search: value })}
-              placeholder="Type route name..."
-            />
-          </div>
-
           {/* Grade Range */}
           <div>
             <label className="block text-sm font-medium mb-3">Grade Range</label>
@@ -135,23 +123,28 @@ export function FilterPanel({ routes, initialFilters, onApplyFilters, onClose }:
           {/* Areas */}
           <div>
             <label className="block text-sm font-medium mb-3">Areas</label>
-            <div className="max-h-40 overflow-y-auto space-y-2">
-              {availableAreas.map(area => (
-                <label key={area} className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={localFilters.areas.includes(area)}
-                    onChange={(e) => {
-                      const newAreas = e.target.checked
-                        ? [...localFilters.areas, area]
-                        : localFilters.areas.filter(a => a !== area)
+            <div className="flex flex-wrap gap-2">
+              {availableAreas.map(area => {
+                const isSelected = localFilters.areas.includes(area)
+                return (
+                  <button
+                    key={area}
+                    onClick={() => {
+                      const newAreas = isSelected
+                        ? localFilters.areas.filter(a => a !== area)
+                        : [...localFilters.areas, area]
                       updateFilters({ areas: newAreas })
                     }}
-                    className="mr-2 rounded border-rock-600 bg-rock-700 text-primary-600 focus:ring-primary-500"
-                  />
-                  <span className="text-sm">{area}</span>
-                </label>
-              ))}
+                    className={`px-3 py-1 text-sm rounded-full transition-colors ${
+                      isSelected
+                        ? 'bg-primary-600 text-white hover:bg-primary-700'
+                        : 'bg-rock-700 text-rock-200 hover:bg-rock-600'
+                    }`}
+                  >
+                    {area}
+                  </button>
+                )
+              })}
             </div>
           </div>
 
@@ -212,20 +205,6 @@ export function FilterPanel({ routes, initialFilters, onApplyFilters, onClose }:
                 />
               </div>
             </div>
-          </div>
-
-          {/* Map Options */}
-          <div>
-            <label className="block text-sm font-medium mb-3">Map Options</label>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={localFilters.showAreas}
-                onChange={(e) => updateFilters({ showAreas: e.target.checked })}
-                className="mr-2 rounded border-rock-600 bg-rock-700 text-primary-600 focus:ring-primary-500"
-              />
-              <span className="text-sm">Show Area Boundaries</span>
-            </label>
           </div>
         </div>
       </div>

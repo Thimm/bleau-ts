@@ -11,16 +11,19 @@ const RouteMap = dynamic(() => import('@/components/RouteMap').then(mod => mod.R
 })
 
 interface MapModalProps {
-  route: Route | null
+  routes: Route[]
   areas: any,
   isOpen: boolean
   onClose: () => void
 }
 
-export function MapModal({ route, areas, isOpen, onClose }: MapModalProps) {
+export function MapModal({ routes, areas, isOpen, onClose }: MapModalProps) {
+  const title = routes.length === 1 ? routes[0].name : 'Route Map'
+  const subtitle = routes.length === 1 ? `${routes[0].area_name} • ${routes[0].grade}` : `${routes.length} routes`
+
   return (
     <AnimatePresence>
-      {isOpen && route && (
+      {isOpen && routes.length > 0 && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
@@ -39,10 +42,10 @@ export function MapModal({ route, areas, isOpen, onClose }: MapModalProps) {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-white">
-                    {route?.name}
+                    {title}
                   </h3>
                   <p className="text-rock-300 text-sm">
-                    {route?.area_name} • {route?.grade}
+                    {subtitle}
                   </p>
                 </div>
                 <button
@@ -56,9 +59,8 @@ export function MapModal({ route, areas, isOpen, onClose }: MapModalProps) {
 
             <div className="flex-grow">
               <RouteMap
-                routes={[route]}
+                routes={routes}
                 areas={areas}
-                showAreas={true}
                 projects={new Set()}
                 onToggleProject={() => {}}
               />

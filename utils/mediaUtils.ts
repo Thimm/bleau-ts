@@ -89,10 +89,10 @@ export function createImageHTML(imageInfo: ImageInfo | null): string {
   if (!imageInfo) return ''
 
   return `
-    <div>
+    <div class="flex justify-center">
       <img 
         src="${imageInfo.url}" 
-        class="w-full h-auto object-cover rounded-lg"
+        class="max-h-[70vh] w-auto h-auto object-contain rounded-lg"
         alt="Route image"
         loading="lazy"
       >

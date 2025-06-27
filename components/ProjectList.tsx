@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { XMarkIcon, TrashIcon, ShareIcon, PlayIcon } from '@heroicons/react/24/outline'
+import { XMarkIcon, TrashIcon, ShareIcon, PlayIcon, MapPinIcon } from '@heroicons/react/24/outline'
 import { BookmarkIcon } from '@heroicons/react/24/solid'
 import { motion } from 'framer-motion'
 import { MediaModal } from './MediaModal'
@@ -10,9 +10,10 @@ interface ProjectListProps {
   projects: Set<string>
   onToggleProject: (routeId: string) => void
   onClose: () => void
+  onShowOnMap: (route: Route) => void
 }
 
-export function ProjectList({ routes, projects, onToggleProject, onClose }: ProjectListProps) {
+export function ProjectList({ routes, projects, onToggleProject, onClose, onShowOnMap }: ProjectListProps) {
   const [isClient, setIsClient] = useState(false)
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null)
   const [isMediaModalOpen, setIsMediaModalOpen] = useState(false)
@@ -20,6 +21,18 @@ export function ProjectList({ routes, projects, onToggleProject, onClose }: Proj
   useEffect(() => {
     setIsClient(true)
   }, [])
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose()
+      }
+    }
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [onClose])
 
   const canShare = isClient && !!navigator.share
 
@@ -29,46 +42,52 @@ export function ProjectList({ routes, projects, onToggleProject, onClose }: Proj
     projectRoutes.forEach(route => onToggleProject(route.bleau_info_id))
   }
   
-  const exportProjects = () => {
-    const projectData = projectRoutes.map(route => ({
-      name: route.name,
-      grade: route.grade,
-      area: route.area_name,
-      steepness: route.steepness,
-      popularity: route.popularity,
-      url: `https://bleau.info/${route.area_name.toLowerCase()}/${route.bleau_info_id}.html`
-    }))
-    
-    const csvContent = [
-      'Name,Grade,Area,Steepness,Popularity,URL',
-      ...projectData.map(route => 
-        `"${route.name}","${route.grade}","${route.area}","${route.steepness}",${route.popularity},"${route.url}"`
-      )
-    ].join('\n')
-    
-    const blob = new Blob([csvContent], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = `fontainebleau-projects-${new Date().toISOString().split('T')[0]}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
+  const handleShareOrExport = async () => {
+    const markdownContent = 
+      `# My Fontainebleau Projects\n\n` +
+      projectRoutes
+        .map(route => {
+          const popularity = route.popularity || 0
+          const filledStars = Math.max(0, Math.min(5, Math.round(popularity / 20)))
+          const emptyStars = Math.max(0, 5 - filledStars)
+          
+          return `## ${route.name} (${route.grade})\n` +
+            `- **Area:** ${route.area_name}\n` +
+            `- **Style:** ${route.steepness}\n` +
+            `- **Popularity:** ${'★'.repeat(filledStars)}${'☆'.repeat(emptyStars)}\n` +
+            `- **Link:** [${route.name} on Bleau.info](https://bleau.info/${route.area_name.toLowerCase()}/${route.bleau_info_id}.html)`
+        })
+        .join('\n\n');
+
+    const file = new File([markdownContent], `fontainebleau-projects.md`, { type: 'text/markdown' });
+
+    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({
+          title: 'My Fontainebleau Projects',
+          text: `Check out my bouldering projects in Fontainebleau.`,
+          files: [file],
+        });
+        console.log('Successfully shared');
+      } catch (error) {
+        console.error('Error sharing:', error);
+        // Fallback to download if sharing fails
+        downloadFile(markdownContent);
+      }
+    } else {
+      // Fallback for browsers that don't support sharing files
+      downloadFile(markdownContent);
+    }
   }
 
-  const handleShare = () => {
-    if (navigator.share) {
-      const shareData = {
-        title: 'My Fontainebleau Projects',
-        text: 'Check out my bouldering projects in Fontainebleau:\n\n' +
-          projectRoutes
-            .map(route => `- ${route.name} (${route.grade}) in ${route.area_name}`)
-            .join('\n'),
-        url: window.location.href
-      }
-      navigator.share(shareData)
-        .then(() => console.log('Successfully shared'))
-        .catch((error) => console.error('Error sharing:', error))
-    }
+  const downloadFile = (content: string) => {
+    const blob = new Blob([content], { type: 'text/markdown' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `fontainebleau-projects-${new Date().toISOString().split('T')[0]}.md`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   const getGradeColor = (grade: string) => {
@@ -136,23 +155,13 @@ export function ProjectList({ routes, projects, onToggleProject, onClose }: Proj
                 {projectRoutes.length} route{projectRoutes.length !== 1 ? 's' : ''}
               </p>
               <div className="flex space-x-2">
-                {canShare ? (
-                  <button
-                    onClick={handleShare}
-                    className="btn-secondary text-xs flex items-center space-x-1"
-                  >
-                    <ShareIcon className="w-4 h-4" />
-                    <span>Share</span>
-                  </button>
-                ) : (
-                  <button
-                    onClick={exportProjects}
-                    className="btn-secondary text-xs flex items-center space-x-1"
-                  >
-                    <ShareIcon className="w-4 h-4" />
-                    <span>Export</span>
-                  </button>
-                )}
+                <button
+                  onClick={handleShareOrExport}
+                  className="btn-secondary text-xs flex items-center space-x-1"
+                >
+                  <ShareIcon className="w-4 h-4" />
+                  <span>Share / Export</span>
+                </button>
                 <button
                   onClick={clearAllProjects}
                   className="btn-secondary text-xs flex items-center space-x-1 hover:bg-red-600"
@@ -206,6 +215,13 @@ export function ProjectList({ routes, projects, onToggleProject, onClose }: Proj
 
                   {route.bleau_info_id && (
                     <div className="space-y-2">
+                      <button
+                        onClick={() => onShowOnMap(route)}
+                        className="w-full bg-rock-600 hover:bg-rock-500 text-white text-center py-1 px-3 rounded text-xs transition-colors flex items-center justify-center space-x-1"
+                      >
+                        <MapPinIcon className="w-3 h-3" />
+                        <span>Show on Map</span>
+                      </button>
                       <button
                         onClick={() => openMediaModal(route)}
                         className="w-full bg-rock-600 hover:bg-rock-500 text-white text-center py-1 px-3 rounded text-xs transition-colors flex items-center justify-center space-x-1"

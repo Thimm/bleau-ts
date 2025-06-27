@@ -19,7 +19,6 @@ export interface FilterState {
     areas: string[]
     sitStart: 'all' | 'sit' | 'standing'
     popularityRange: [number, number]
-    showAreas: boolean
     search: string
 }
 

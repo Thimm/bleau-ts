@@ -55,10 +55,10 @@ export function MediaModal({ route, isOpen, onClose }: MediaModalProps) {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-rock-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+            className="bg-rock-800 rounded-lg max-w-5xl w-full max-h-[90vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 border-b border-rock-700">
+            <div className="p-4 border-b border-rock-700 shrink-0">
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="text-lg font-semibold text-white">
@@ -77,7 +77,7 @@ export function MediaModal({ route, isOpen, onClose }: MediaModalProps) {
               </div>
             </div>
 
-            <div className="py-4">
+            <div className="py-4 overflow-y-auto">
               {loading && (
                 <div className="text-center py-8 px-4">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-4"></div>
