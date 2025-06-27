@@ -133,9 +133,11 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
         </div>
         <button
           onClick={onClose}
-          className="p-2 hover:bg-rock-700 rounded-lg"
+          className="flex items-center space-x-2 px-3 py-2 bg-rock-700 hover:bg-rock-600 rounded-lg transition-colors text-sm"
+          title="Back to search"
         >
-          <XMarkIcon className="w-5 h-5" />
+          <XMarkIcon className="w-4 h-4" />
+          <span className="hidden sm:inline">Back to Search</span>
         </button>
       </div>
 
