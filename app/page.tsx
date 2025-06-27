@@ -39,6 +39,37 @@ export default function Home() {
     setShowFilters(false)
   }
 
+  // Ensure only one overlay is active at a time, especially on mobile
+  const handleToggleFilters = () => {
+    if (showProjects) {
+      setShowProjects(false)
+    }
+    if (showMobileSearch) {
+      setShowMobileSearch(false)
+    }
+    setShowFilters(!showFilters)
+  }
+
+  const handleToggleProjects = () => {
+    if (showFilters) {
+      setShowFilters(false)
+    }
+    if (showMobileSearch) {
+      setShowMobileSearch(false)
+    }
+    setShowProjects(!showProjects)
+  }
+
+  const handleToggleMobileSearch = () => {
+    if (showFilters) {
+      setShowFilters(false)
+    }
+    if (showProjects) {
+      setShowProjects(false)
+    }
+    setShowMobileSearch(!showMobileSearch)
+  }
+
   // This effect debounces the filter state.
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -173,8 +204,8 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-rock-900 flex flex-col">
       <Header 
-        onToggleFilters={() => setShowFilters(!showFilters)}
-        onToggleProjects={() => setShowProjects(!showProjects)}
+        onToggleFilters={handleToggleFilters}
+        onToggleProjects={handleToggleProjects}
         projectCount={projects.size}
         filteredCount={totalFiltered}
         displayedCount={filteredRoutes.length}
@@ -183,7 +214,9 @@ export default function Home() {
         searchValue={filters.search} // The input is controlled by the "live" filters
         onSearchChange={(value) => setFilters(prev => ({ ...prev, search: value }))}
         showMobileSearch={showMobileSearch}
-        onToggleMobileSearch={() => setShowMobileSearch(!showMobileSearch)}
+        onToggleMobileSearch={handleToggleMobileSearch}
+        showFilters={showFilters}
+        showProjects={showProjects}
       />
       
       <div className="flex flex-1 overflow-hidden">

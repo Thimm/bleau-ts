@@ -15,6 +15,8 @@ interface HeaderProps {
   onSearchChange: (value: string) => void
   showMobileSearch: boolean
   onToggleMobileSearch: () => void
+  showFilters: boolean
+  showProjects: boolean
 }
 
 export function Header({ 
@@ -28,7 +30,9 @@ export function Header({
   searchValue,
   onSearchChange,
   showMobileSearch,
-  onToggleMobileSearch
+  onToggleMobileSearch,
+  showFilters,
+  showProjects
 }: HeaderProps) {
   return (
     <header className="bg-rock-800 border-b border-rock-700 px-4 py-3 sticky top-0 z-[1000]">
@@ -63,14 +67,22 @@ export function Header({
 
           <button
             onClick={onToggleMobileSearch}
-            className="btn-secondary flex items-center space-x-2 md:hidden"
+            className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+              showMobileSearch 
+                ? 'bg-primary-600 text-white' 
+                : 'bg-rock-700 hover:bg-rock-600 text-rock-300 hover:text-white'
+            } md:hidden`}
           >
             <MagnifyingGlassIcon className="w-5 h-5" />
           </button>
           
           <button
             onClick={onToggleFilters}
-            className="btn-secondary flex items-center space-x-2"
+            className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors text-sm ${
+              showFilters 
+                ? 'bg-primary-600 text-white border-b-2 border-primary-400' 
+                : 'bg-rock-700 hover:bg-rock-600 text-rock-300 hover:text-white'
+            }`}
           >
             <AdjustmentsHorizontalIcon className="w-5 h-5" />
             <span className="hidden sm:inline">Filters</span>
@@ -78,12 +90,18 @@ export function Header({
           
           <button
             onClick={onToggleProjects}
-            className="btn-secondary flex items-center space-x-2 relative"
+            className={`flex items-center space-x-2 px-3 py-2 rounded-lg transition-colors text-sm relative ${
+              showProjects 
+                ? 'bg-primary-600 text-white border-b-2 border-primary-400' 
+                : 'bg-rock-700 hover:bg-rock-600 text-rock-300 hover:text-white'
+            }`}
           >
             <BookmarkIcon className="w-5 h-5" />
             <span className="hidden sm:inline">Projects</span>
             {projectCount > 0 && (
-              <span className="absolute -top-2 -right-2 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              <span className={`absolute -top-2 -right-2 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center ${
+                showProjects ? 'bg-yellow-500' : 'bg-primary-600'
+              }`}>
                 {projectCount}
               </span>
             )}
