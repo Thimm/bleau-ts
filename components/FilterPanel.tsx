@@ -15,6 +15,11 @@ interface FilterPanelProps {
 export function FilterPanel({ routes, initialFilters, onApplyFilters, onClose }: FilterPanelProps) {
   const [localFilters, setLocalFilters] = React.useState<FilterState>(initialFilters)
 
+  // Update local filters when initialFilters prop changes (e.g., when loaded from localStorage)
+  React.useEffect(() => {
+    setLocalFilters(initialFilters)
+  }, [initialFilters])
+
   const availableGrades = getAvailableGrades()
   const availableSteepness = Array.from(new Set(routes.map(r => r.steepness))).sort()
   const availableAreas = Array.from(new Set(routes.map(r => r.area_name))).sort()
