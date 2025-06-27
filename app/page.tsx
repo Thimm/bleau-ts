@@ -252,6 +252,32 @@ export default function Home() {
               onShowOnMap={handleShowOnMap}
             />
           </div>
+          
+          {/* Footer with attribution */}
+          <footer className="bg-rock-800 border-t border-rock-700 px-4 py-2">
+            <div className="text-center">
+              <p className="text-xs text-rock-500">
+                Route data from{' '}
+                <a 
+                  href="https://bleau.info" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-rock-400 hover:text-rock-300 transition-colors"
+                >
+                  Bleau.info
+                </a>
+                {' '}under{' '}
+                <a 
+                  href="https://creativecommons.org/licenses/by/4.0/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-rock-400 hover:text-rock-300 transition-colors"
+                >
+                  Creative Commons Attribution 4.0 International
+                </a>
+              </p>
+            </div>
+          </footer>
         </main>
         
         {/* Filter Panel (Right Panel) */}
