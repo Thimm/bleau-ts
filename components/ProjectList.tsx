@@ -59,25 +59,43 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
         })
         .join('\n\n');
 
-    const file = new File([markdownContent], `fontainebleau-projects.md`, { type: 'text/markdown' });
-
-    if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+    // Try native sharing first (especially for mobile)
+    if (navigator.share) {
       try {
-        await navigator.share({
+        // Create a more mobile-friendly share content
+        const shareText = projectRoutes.length === 1 
+          ? `Check out my bouldering project: ${projectRoutes[0].name} (${projectRoutes[0].grade}) in ${projectRoutes[0].area_name}`
+          : `Check out my ${projectRoutes.length} bouldering projects in Fontainebleau!`
+        
+        const shareData: any = {
           title: 'My Fontainebleau Projects',
-          text: `Check out my bouldering projects in Fontainebleau.`,
-          files: [file],
-        });
-        console.log('Successfully shared');
+          text: shareText,
+        }
+
+        // Add URL if we have projects
+        if (projectRoutes.length > 0) {
+          shareData.url = `https://bleau.info/${projectRoutes[0].area_name.toLowerCase()}/${projectRoutes[0].bleau_info_id}.html`
+        }
+
+        // Try to share files if supported
+        if (navigator.canShare && navigator.canShare({ files: [] })) {
+          const file = new File([markdownContent], `fontainebleau-projects.md`, { type: 'text/markdown' })
+          if (navigator.canShare({ files: [file] })) {
+            shareData.files = [file]
+          }
+        }
+
+        await navigator.share(shareData)
+        console.log('Successfully shared')
+        return
       } catch (error) {
-        console.error('Error sharing:', error);
-        // Fallback to download if sharing fails
-        downloadFile(markdownContent);
+        console.error('Error sharing:', error)
+        // Continue to fallback if sharing fails
       }
-    } else {
-      // Fallback for browsers that don't support sharing files
-      downloadFile(markdownContent);
     }
+    
+    // Fallback to download
+    downloadFile(markdownContent)
   }
 
   const downloadFile = (content: string) => {
@@ -133,11 +151,10 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
         </div>
         <button
           onClick={onClose}
-          className="flex items-center space-x-2 px-3 py-2 bg-rock-700 hover:bg-rock-600 rounded-lg transition-colors text-sm"
-          title="Back to search"
+          className="flex items-center justify-center w-10 h-10 bg-rock-700 hover:bg-rock-600 rounded-lg transition-colors"
+          title="Close projects and return to search"
         >
-          <XMarkIcon className="w-4 h-4" />
-          <span className="hidden sm:inline">Back to Search</span>
+          <XMarkIcon className="w-5 h-5" />
         </button>
       </div>
 
@@ -162,7 +179,7 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
                   className="btn-secondary text-xs flex items-center space-x-1"
                 >
                   <ShareIcon className="w-4 h-4" />
-                  <span>Share / Export</span>
+                  <span>{canShare ? 'Share' : 'Export'}</span>
                 </button>
                 <button
                   onClick={clearAllProjects}
