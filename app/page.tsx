@@ -51,6 +51,7 @@ export default function Home() {
   const [routeForMapModal, setRouteForMapModal] = useState<Route | null>(null)
   
   const mapRef = useRef<RouteMapRef>(null)
+  const isInitialMount = useRef(true)
 
   const handleApplyFilters = (newFilters: FilterState) => {
     setFilters(newFilters)
@@ -101,6 +102,31 @@ export default function Home() {
       )
     }
   }, [mapInstance])
+
+  // Load projects from localStorage on initial render
+  useEffect(() => {
+    try {
+      const savedProjects = window.localStorage.getItem('projects')
+      if (savedProjects) {
+        setProjects(new Set(JSON.parse(savedProjects)))
+      }
+    } catch (error) {
+      console.error('Error reading projects from localStorage', error)
+    }
+  }, [])
+
+  // Save projects to localStorage whenever they change
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false
+    } else {
+      try {
+        window.localStorage.setItem('projects', JSON.stringify(Array.from(projects)))
+      } catch (error) {
+        console.error('Error saving projects to localStorage', error)
+      }
+    }
+  }, [projects])
 
   // The expensive filtering logic now depends on the debounced filters.
   const { filteredRoutes, totalFiltered, isLimited } = useMemo(() => {
