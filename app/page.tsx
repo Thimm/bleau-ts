@@ -9,20 +9,22 @@ import { gradeToNumeric } from '@/utils/gradeUtils'
 import type { Route, FilterState } from '@/types'
 import { AnimatePresence, motion } from 'framer-motion'
 import { MapModal } from '@/components/MapModal'
+import { loadJSON, saveJSON } from '@/utils/storage'
+
+const defaultFilters: FilterState = {
+  gradeRange: [8, 19],
+  steepness: [],
+  areas: [],
+  sitStart: 'all',
+  popularityRange: [0, 30000],
+  search: ''
+}
 
 export default function Home() {
   const [routes, setRoutes] = useState<Route[]>([])
   const [areas, setAreas] = useState<any>(null)
-  const [filters, setFilters] = useState<FilterState>({
-    gradeRange: [8, 19],
-    steepness: [],
-    areas: [],
-    sitStart: 'all',
-    popularityRange: [0, 30000],
-    search: ''
-  })
+  const [filters, setFilters] = useState<FilterState>(() => loadJSON('filters', defaultFilters))
   
-  // A debounced version of the filters that only updates after the user stops typing.
   const [debouncedFilters, setDebouncedFilters] = useState<FilterState>(filters)
   
   const [projects, setProjects] = useState<Set<string>>(new Set())
@@ -31,8 +33,7 @@ export default function Home() {
   const [showMobileSearch, setShowMobileSearch] = useState(false)
   const [loading, setLoading] = useState(true)
   const [routesForMapModal, setRoutesForMapModal] = useState<Route[]>([])
-  const [filtersLoaded, setFiltersLoaded] = useState(false)
-  
+
   const isInitialMount = useRef(true)
 
   const handleApplyFilters = (newFilters: FilterState) => {
@@ -40,7 +41,6 @@ export default function Home() {
     setShowFilters(false)
   }
 
-  // Ensure only one overlay is active at a time, especially on mobile
   const handleToggleFilters = () => {
     if (showProjects) {
       setShowProjects(false)
@@ -71,9 +71,8 @@ export default function Home() {
     setShowMobileSearch(!showMobileSearch)
   }
 
-  // This effect debounces the filter state, but only after initial load
   useEffect(() => {
-    if (!filtersLoaded) return // Don't debounce during initial load
+    if (!isInitialMount.current) return // Don't debounce during initial load
     
     const handler = setTimeout(() => {
       setDebouncedFilters(filters)
@@ -83,9 +82,8 @@ export default function Home() {
     return () => {
       clearTimeout(handler)
     }
-  }, [filters, filtersLoaded])
+  }, [filters, isInitialMount])
 
-  // Load data and request location
   useEffect(() => {
     Promise.all([
       fetch('/routes.json').then(res => res.json()),
@@ -104,7 +102,6 @@ export default function Home() {
     })
   }, [])
 
-  // Load projects from localStorage on initial render
   useEffect(() => {
     try {
       const savedProjects = window.localStorage.getItem('projects')
@@ -116,49 +113,6 @@ export default function Home() {
     }
   }, [])
 
-  // Load filters from localStorage on initial render
-  useEffect(() => {
-    try {
-      const savedFilters = window.localStorage.getItem('filters')
-      if (savedFilters) {
-        const parsedFilters = JSON.parse(savedFilters)
-        setFilters(parsedFilters)
-        setDebouncedFilters(parsedFilters)
-      }
-      setFiltersLoaded(true)
-    } catch (error) {
-      console.error('Error reading filters from localStorage', error)
-      setFiltersLoaded(true)
-    }
-  }, [])
-
-  // Save projects to localStorage whenever they change
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false
-    } else {
-      try {
-        window.localStorage.setItem('projects', JSON.stringify(Array.from(projects)))
-      } catch (error) {
-        console.error('Error saving projects to localStorage', error)
-      }
-    }
-  }, [projects])
-
-  // Save filters to localStorage whenever they change
-  useEffect(() => {
-    if (isInitialMount.current) {
-      isInitialMount.current = false
-    } else {
-      try {
-        window.localStorage.setItem('filters', JSON.stringify(filters))
-      } catch (error) {
-        console.error('Error saving filters to localStorage', error)
-      }
-    }
-  }, [filters])
-
-  // The expensive filtering logic now depends on the debounced filters.
   const { filteredRoutes, totalFiltered, isLimited } = useMemo(() => {
     const MAX_DISPLAY_ROUTES = 500
     const MAX_SEARCH_RESULTS = 2000
@@ -222,6 +176,10 @@ export default function Home() {
     return routes.filter(route => projects.has(route.bleau_info_id))
   }, [routes, projects])
 
+  useEffect(() => {
+    saveJSON('filters', filters)
+  }, [filters])
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -243,7 +201,7 @@ export default function Home() {
         displayedCount={filteredRoutes.length}
         isLimited={isLimited}
         routes={routes}
-        searchValue={filters.search} // The input is controlled by the "live" filters
+        searchValue={filters.search}
         onSearchChange={(value) => setFilters(prev => ({ ...prev, search: value }))}
         showMobileSearch={showMobileSearch}
         onToggleMobileSearch={handleToggleMobileSearch}
@@ -252,7 +210,6 @@ export default function Home() {
       />
       
       <div className="flex flex-1 overflow-hidden">
-        {/* Project List (Left Panel) */}
         <AnimatePresence>
           {showProjects && (
             <>
@@ -274,18 +231,16 @@ export default function Home() {
           )}
         </AnimatePresence>
 
-        {/* Main Content */}
         <main className="flex-1 flex flex-col overflow-y-auto">
           <div className="bg-rock-900 flex-grow">
             <RouteList
-              routes={filteredRoutes} // The list is controlled by the debounced, filtered routes
+              routes={filteredRoutes}
               projects={projects}
               onToggleProject={toggleProject}
               onShowOnMap={handleShowOnMap}
             />
           </div>
           
-          {/* Footer with attribution */}
           <footer className="bg-rock-800 border-t border-rock-700 px-4 py-2">
             <div className="text-center">
               <p className="text-xs text-rock-500">
@@ -312,7 +267,6 @@ export default function Home() {
           </footer>
         </main>
         
-        {/* Filter Panel (Right Panel) */}
         <AnimatePresence>
           {showFilters && (
             <>
@@ -324,7 +278,6 @@ export default function Home() {
                 onClick={() => setShowFilters(false)}
               />
               <FilterPanel
-                key={`filters-${filtersLoaded}`}
                 routes={routes}
                 initialFilters={filters}
                 onApplyFilters={handleApplyFilters}
