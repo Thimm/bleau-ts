@@ -76,14 +76,14 @@ export function MediaModal({ route, isOpen, onClose }: MediaModalProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/80 z-[10000] flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/80 z-[10000] flex items-center justify-center p-4 pt-20 sm:pt-4"
           onClick={onClose}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-rock-800 rounded-lg max-w-5xl w-full max-h-[90vh] flex flex-col"
+            className="bg-rock-800 rounded-lg max-w-5xl w-full max-h-[90vh] flex flex-col relative"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="p-4 border-b border-rock-700 shrink-0">
