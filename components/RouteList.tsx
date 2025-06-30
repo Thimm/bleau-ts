@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/solid'
 import { BookmarkIcon, LinkIcon, MapPinIcon, PlayIcon } from '@heroicons/react/24/outline'
 import { MediaModal } from './MediaModal'
+import { AreaName } from './AreaName'
 import type { Route } from '@/types'
 
 interface RouteListProps {
@@ -81,9 +82,7 @@ export function RouteList({ routes, projects, onToggleProject, onShowOnMap }: Ro
                   <h3 className="font-semibold text-white truncate text-lg">
                     {route.name}
                   </h3>
-                  <p className="text-rock-300 text-sm truncate">
-                    {route.area_name}
-                  </p>
+                  <AreaName areaName={route.area_name} />
                 </div>
                 
                 <button

@@ -211,7 +211,30 @@ export const RouteMap = forwardRef<RouteMapRef, RouteMapProps>(
                         </div>
                         <div className="flex justify-between">
                           <span>Area:</span>
-                          <span className="font-medium">{route.area_name}</span>
+                          <span className="font-medium">
+                            <a 
+                              href="#" 
+                              onClick={(e) => {
+                                e.preventDefault()
+                                // Fetch parking info and open Google Maps
+                                fetch(`/api/parking?area=${encodeURIComponent(route.area_name)}`)
+                                  .then(res => res.json())
+                                  .then(data => {
+                                    if (data.google_url) {
+                                      window.open(data.google_url, '_blank', 'noopener,noreferrer')
+                                    }
+                                  })
+                                  .catch(err => console.error('Error fetching parking info:', err))
+                              }}
+                              className="flex items-center space-x-1 text-blue-600 hover:text-blue-800 hover:underline"
+                              title="Get directions to parking"
+                            >
+                              <span>{route.area_name}</span>
+                              <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                              </svg>
+                            </a>
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Style:</span>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { XMarkIcon, PlayIcon, PhotoIcon } from '@heroicons/react/24/outline'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getMediaFromBleauPage, createVideoHTML, createImageHTML } from '@/utils/mediaUtils'
+import { AreaName } from './AreaName'
 import type { Route } from '@/types'
 
 interface MediaModalProps {
@@ -15,31 +16,58 @@ interface MediaInfo {
   image: { url: string } | null
 }
 
+interface TopoInfo {
+  topo_id: number
+  coordinates: any[] | null
+  image_url: string
+}
+
 export function MediaModal({ route, isOpen, onClose }: MediaModalProps) {
   const [mediaInfo, setMediaInfo] = useState<MediaInfo | null>(null)
+  const [topoInfo, setTopoInfo] = useState<TopoInfo | null>(null)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    if (isOpen && route && route.bleau_info_id) {
+    if (isOpen && route) {
       setLoading(true)
       setError(null)
       setMediaInfo(null)
+      setTopoInfo(null)
 
-      getMediaFromBleauPage(route.area_name, route.bleau_info_id)
-        .then((info) => {
-          setMediaInfo(info)
+      // Fetch topo information
+      const fetchTopoInfo = fetch(`/api/topo?routeId=${route.id}`)
+        .then(res => res.ok ? res.json() : null)
+        .catch(err => {
+          console.error('Error fetching topo info:', err)
+          return null
+        })
+
+      // Fetch media information (only if bleau_info_id exists)
+      const fetchMediaInfo = route.bleau_info_id 
+        ? getMediaFromBleauPage(route.area_name, route.bleau_info_id)
+            .catch(err => {
+              console.error('Error fetching media:', err)
+              return null
+            })
+        : Promise.resolve(null)
+
+      Promise.all([fetchTopoInfo, fetchMediaInfo])
+        .then(([topo, media]) => {
+          setTopoInfo(topo)
+          setMediaInfo(media)
           setLoading(false)
         })
         .catch((err) => {
-          console.error('Error fetching media:', err)
-          setError('Failed to load media')
+          console.error('Error fetching data:', err)
+          setError('Failed to load data')
           setLoading(false)
         })
     }
   }, [isOpen, route])
 
   const hasMedia = mediaInfo && (mediaInfo.video || mediaInfo.image)
+  const hasTopo = topoInfo && topoInfo.image_url
 
   return (
     <AnimatePresence>
@@ -64,9 +92,11 @@ export function MediaModal({ route, isOpen, onClose }: MediaModalProps) {
                   <h3 className="text-lg font-semibold text-white">
                     {route?.name}
                   </h3>
-                  <p className="text-rock-300 text-sm">
-                    {route?.area_name} • {route?.grade}
-                  </p>
+                  <div className="flex items-center space-x-1 text-sm">
+                    <AreaName areaName={route?.area_name || ''} />
+                    <span className="text-rock-300">•</span>
+                    <span className="text-rock-300">{route?.grade}</span>
+                  </div>
                 </div>
                 <button
                   onClick={onClose}
@@ -81,31 +111,89 @@ export function MediaModal({ route, isOpen, onClose }: MediaModalProps) {
               {loading && (
                 <div className="text-center py-8 px-4">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-4"></div>
-                  <p className="text-rock-300">Loading media...</p>
+                  <p className="text-rock-300">Loading topo and media...</p>
                 </div>
               )}
 
               {error && (
                 <div className="text-center py-8 px-4">
-                  <p className="text-red-400 mb-2">Error loading media</p>
+                  <p className="text-red-400 mb-2">Error loading data</p>
                   <p className="text-rock-400 text-sm">{error}</p>
                 </div>
               )}
 
-              {!loading && !error && !hasMedia && (
+              {!loading && !error && !hasTopo && !hasMedia && (
                 <div className="text-center py-8 px-4">
                   <div className="text-rock-600 mb-4">
                     <PhotoIcon className="w-16 h-16 mx-auto" />
                   </div>
-                  <p className="text-rock-300">No media available for this route</p>
+                  <p className="text-rock-300">No topo or media available for this route</p>
                   <p className="text-rock-400 text-sm mt-2">
                     Check the route details page for more information
                   </p>
                 </div>
               )}
 
-              {!loading && !error && hasMedia && (
-                <div className="space-y-4">
+              {!loading && !error && (hasTopo || hasMedia) && (
+                <div className="space-y-4 px-4">
+                  {/* Topo Image - Always shown first */}
+                  {hasTopo && (
+                    <div>
+                      <div className="flex items-center space-x-2 mb-2">
+                        <PhotoIcon className="w-4 h-4 text-primary-500" />
+                        <span className="text-white font-medium">Topo</span>
+                        {topoInfo.coordinates && topoInfo.coordinates.length > 0 && (
+                          <span className="text-xs text-rock-400 ml-2">
+                            (with line)
+                          </span>
+                        )}
+                      </div>
+                      <div className="bg-rock-900 rounded-lg overflow-hidden relative">
+                        <img
+                          src={topoInfo.image_url}
+                          alt={`Topo for ${route?.name}`}
+                          className="w-full h-auto max-h-96 object-contain"
+                          onError={(e) => {
+                            console.error('Failed to load topo image:', topoInfo.image_url)
+                            e.currentTarget.style.display = 'none'
+                          }}
+                        />
+                        {topoInfo.coordinates && topoInfo.coordinates.length > 0 && (
+                          <svg
+                            className="absolute top-0 left-0 w-full h-full pointer-events-none"
+                            viewBox="0 0 100 100"
+                            preserveAspectRatio="none"
+                          >
+                            {/* Shadow/outline for better visibility */}
+                            <polyline
+                              points={topoInfo.coordinates.map(coord => 
+                                `${coord.x * 100}, ${coord.y * 100}`
+                              ).join(' ')}
+                              fill="none"
+                              stroke="#000000"
+                              strokeWidth="1"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              opacity="0.8"
+                            />
+                            {/* Main red line */}
+                            <polyline
+                              points={topoInfo.coordinates.map(coord => 
+                                `${coord.x * 100}, ${coord.y * 100}`
+                              ).join(' ')}
+                              fill="none"
+                              stroke="#ef4444"
+                              strokeWidth="0.8"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Other Media */}
                   {mediaInfo?.video && (
                     <div>
                       <div className="flex items-center space-x-2 mb-2">

@@ -1,6 +1,7 @@
 import React from 'react'
 import { AdjustmentsHorizontalIcon, BookmarkIcon, MapIcon, MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { SearchAutocomplete } from './SearchAutocomplete'
+import { BurgerMenu } from './BurgerMenu'
 import type { Route } from '@/types'
 
 interface HeaderProps {
@@ -106,6 +107,9 @@ export function Header({
               </span>
             )}
           </button>
+
+          {/* Burger Menu */}
+          <BurgerMenu />
         </div>
       </div>
       {showMobileSearch && (

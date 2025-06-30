@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { MagnifyingGlassIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { motion, AnimatePresence } from 'framer-motion'
+import { AreaName } from './AreaName'
 import type { Route } from '@/types'
 
 interface SearchAutocompleteProps {
@@ -197,8 +198,10 @@ export function SearchAutocomplete({ routes, value, onChange, placeholder = "Sea
                     <div className="font-medium text-white truncate">
                       {highlightMatch(result.route.name, result.matchIndex, result.matchLength)}
                     </div>
-                    <div className="text-sm text-rock-400 truncate">
-                      {result.route.area_name} • {result.route.grade}
+                    <div className="flex items-center space-x-1 text-sm">
+                      <AreaName areaName={result.route.area_name} />
+                      <span className="text-rock-400">•</span>
+                      <span className="text-rock-400">{result.route.grade}</span>
                     </div>
                   </div>
                   <div className="flex items-center space-x-2 ml-2">

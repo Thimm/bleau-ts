@@ -3,6 +3,7 @@ import { XMarkIcon, TrashIcon, ShareIcon, PlayIcon, MapPinIcon } from '@heroicon
 import { BookmarkIcon } from '@heroicons/react/24/solid'
 import { motion } from 'framer-motion'
 import { MediaModal } from './MediaModal'
+import { AreaName } from './AreaName'
 import type { Route } from '@/types'
 
 interface ProjectListProps {
@@ -204,9 +205,7 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
                       <h3 className="font-semibold text-white truncate">
                         {route.name}
                       </h3>
-                      <p className="text-rock-300 text-xs truncate">
-                        {route.area_name}
-                      </p>
+                      <AreaName areaName={route.area_name} className="text-xs" />
                     </div>
                     
                     <button
