@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { TrashIcon, ShareIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { BookmarkIcon } from '@heroicons/react/24/solid'
 import { motion } from 'framer-motion'
-import { MediaModal } from './MediaModal'
 import { RouteCard } from './RouteCard'
 import type { Route } from '@/types'
 
@@ -12,12 +11,11 @@ interface ProjectListProps {
   onToggleProject: (routeId: string) => void
   onClose: () => void
   onShowOnMap: (route: Route) => void
+  onOpenMedia: (route: Route) => void
 }
 
-export function ProjectList({ routes, projects, onToggleProject, onClose, onShowOnMap }: ProjectListProps) {
+export function ProjectList({ routes, projects, onToggleProject, onClose, onShowOnMap, onOpenMedia }: ProjectListProps) {
   const [isClient, setIsClient] = useState(false)
-  const [selectedRoute, setSelectedRoute] = useState<Route | null>(null)
-  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false)
 
   useEffect(() => {
     setIsClient(true)
@@ -119,18 +117,6 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
     a.download = `fontainebleau-projects-${new Date().toISOString().split('T')[0]}.md`;
     a.click();
     URL.revokeObjectURL(url);
-  }
-
-
-
-  const openMediaModal = (route: Route) => {
-    setSelectedRoute(route)
-    setIsMediaModalOpen(true)
-  }
-
-  const closeMediaModal = () => {
-    setIsMediaModalOpen(false)
-    setSelectedRoute(null)
   }
 
   const handleShareRoute = async (route: Route) => {
@@ -250,7 +236,7 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
                     projects={projects}
                     onToggleProject={onToggleProject}
                     onShowOnMap={onShowOnMap}
-                    onOpenMedia={openMediaModal}
+                    onOpenMedia={onOpenMedia}
                     variant="compact"
                   />
                 ))}
@@ -258,12 +244,6 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
           </>
         )}
       </div>
-      
-      <MediaModal
-        route={selectedRoute}
-        isOpen={isMediaModalOpen}
-        onClose={closeMediaModal}
-      />
     </motion.div>
   )
 } 

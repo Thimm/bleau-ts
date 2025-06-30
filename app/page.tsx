@@ -10,6 +10,7 @@ import { gradeToNumeric, getLowestGrade, getHighestGrade } from '@/utils/gradeUt
 import type { Route, FilterState } from '@/types'
 import { AnimatePresence, motion } from 'framer-motion'
 import { MapModal } from '@/components/MapModal'
+import { MediaModal } from '@/components/MediaModal'
 import { loadJSON, saveJSON } from '@/utils/storage'
 
 const defaultFilters: FilterState = {
@@ -35,6 +36,8 @@ export default function Home() {
   const [showMobileSearch, setShowMobileSearch] = useState(false)
   const [loading, setLoading] = useState(true)
   const [routesForMapModal, setRoutesForMapModal] = useState<Route[]>([])
+  const [selectedRoute, setSelectedRoute] = useState<Route | null>(null)
+  const [isMediaModalOpen, setIsMediaModalOpen] = useState(false)
 
   const isInitialMount = useRef(true)
   const mainRef = useRef<HTMLDivElement>(null)
@@ -244,6 +247,16 @@ export default function Home() {
     setRoutesForMapModal(routesArray)
   }
 
+  const openMediaModal = (route: Route) => {
+    setSelectedRoute(route)
+    setIsMediaModalOpen(true)
+  }
+
+  const closeMediaModal = () => {
+    setIsMediaModalOpen(false)
+    setSelectedRoute(null)
+  }
+
   const projectRoutes = useMemo(() => {
     return routes.filter(route => projects.has(route.bleau_info_id))
   }, [routes, projects])
@@ -298,6 +311,7 @@ export default function Home() {
                 onToggleProject={toggleProject}
                 onClose={() => setShowProjects(false)}
                 onShowOnMap={handleShowOnMap}
+                onOpenMedia={openMediaModal}
               />
             </>
           )}
@@ -364,6 +378,11 @@ export default function Home() {
         areas={areas}
         isOpen={routesForMapModal.length > 0}
         onClose={() => setRoutesForMapModal([])}
+      />
+      <MediaModal 
+        route={selectedRoute}
+        isOpen={isMediaModalOpen}
+        onClose={closeMediaModal}
       />
     </div>
   )
