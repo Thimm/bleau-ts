@@ -6,14 +6,14 @@ import { FilterPanel } from '@/components/FilterPanel'
 import { RouteList } from '@/components/RouteList'
 import { Header } from '@/components/Header'
 import { ProjectList } from '@/components/ProjectList'
-import { gradeToNumeric } from '@/utils/gradeUtils'
+import { gradeToNumeric, getLowestGrade, getHighestGrade } from '@/utils/gradeUtils'
 import type { Route, FilterState } from '@/types'
 import { AnimatePresence, motion } from 'framer-motion'
 import { MapModal } from '@/components/MapModal'
 import { loadJSON, saveJSON } from '@/utils/storage'
 
 const defaultFilters: FilterState = {
-  gradeRange: [8, 19],
+  gradeRange: [getLowestGrade(), getHighestGrade()],
   steepness: [],
   areas: [],
   sitStart: 'all',

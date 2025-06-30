@@ -34,21 +34,7 @@ const numericToGradeMap: { [key: number]: string } = Object.fromEntries(
 )
 
 export function gradeToNumeric(grade: string): number {
-    const gradeMap: { [key: string]: number } = {
-        '2': 2, '2+': 2.5,
-        '3': 3, '3+': 3.5,
-        '4': 4, '4+': 4.5,
-        '5': 5, '5+': 5.5,
-        '6a': 6, '6a+': 6.5,
-        '6b': 7, '6b+': 7.5,
-        '6c': 8, '6c+': 8.5,
-        '7a': 9, '7a+': 9.5,
-        '7b': 10, '7b+': 10.5,
-        '7c': 11, '7c+': 11.5,
-        '8a': 12, '8a+': 12.5,
-        '8b': 13, '8b+': 13.5,
-    }
-    return gradeMap[grade] || 0
+    return gradeMapping[grade] || 0
 }
 
 export function numericToGrade(numeric: number): string {
@@ -57,6 +43,15 @@ export function numericToGrade(numeric: number): string {
 
 export function getAvailableGrades(): string[] {
     return Object.keys(gradeMapping).sort((a, b) => gradeMapping[a] - gradeMapping[b])
+}
+
+// Get the lowest and highest grade values for reset functionality
+export function getLowestGrade(): number {
+    return Math.min(...Object.values(gradeMapping))
+}
+
+export function getHighestGrade(): number {
+    return Math.max(...Object.values(gradeMapping))
 }
 
 export function getGradeColor(grade: string): string {
@@ -73,6 +68,8 @@ export function getGradeColor(grade: string): string {
         '7c': 'bg-red-800', '7c+': 'bg-red-800',
         '8a': 'bg-orange-800', '8a+': 'bg-orange-800',
         '8b': 'bg-orange-900', '8b+': 'bg-orange-900',
+        '8c': 'bg-purple-800', '8c+': 'bg-purple-900',
+        '9a': 'bg-black',
     }
     return colors[grade as keyof typeof colors] || 'bg-rock-500'
 }
@@ -91,6 +88,8 @@ export function getGradeColorHex(grade: string): string {
         '7c': '#991b1b', '7c+': '#991b1b',
         '8a': '#7c2d12', '8a+': '#7c2d12',
         '8b': '#7c2d12', '8b+': '#7c2d12',
+        '8c': '#581c87', '8c+': '#3b0764',
+        '9a': '#000000',
     }
     return colors[grade as keyof typeof colors] || '#6b7280'
 }

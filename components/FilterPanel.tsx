@@ -3,7 +3,7 @@ import { XMarkIcon } from '@heroicons/react/24/outline'
 import { motion } from 'framer-motion'
 import { SearchAutocomplete } from './SearchAutocomplete'
 import type { Route, FilterState } from '@/types'
-import { getAvailableGrades, gradeToNumeric, numericToGrade } from '@/utils/gradeUtils'
+import { getAvailableGrades, gradeToNumeric, numericToGrade, getLowestGrade, getHighestGrade } from '@/utils/gradeUtils'
 
 interface FilterPanelProps {
   routes: Route[]
@@ -37,7 +37,7 @@ export function FilterPanel({ routes, initialFilters, onApplyFilters, onClose }:
 
   const handleReset = () => {
     const defaultFilters: FilterState = {
-      gradeRange: [0, 34],
+      gradeRange: [getLowestGrade(), getHighestGrade()],
       steepness: [],
       areas: [],
       sitStart: 'all',
@@ -75,9 +75,14 @@ export function FilterPanel({ routes, initialFilters, onApplyFilters, onClose }:
                 <label className="block text-xs text-rock-300 mb-1">Min Grade</label>
                 <select
                   value={numericToGrade(localFilters.gradeRange[0])}
-                  onChange={(e) => updateFilters({
-                    gradeRange: [gradeToNumeric(e.target.value), localFilters.gradeRange[1]]
-                  })}
+                  onChange={(e) => {
+                    const newMinGrade = gradeToNumeric(e.target.value)
+                    const currentMaxGrade = localFilters.gradeRange[1]
+                    const newMaxGrade = newMinGrade > currentMaxGrade ? newMinGrade : currentMaxGrade
+                    updateFilters({
+                      gradeRange: [newMinGrade, newMaxGrade]
+                    })
+                  }}
                   className="input-primary w-full"
                 >
                   {availableGrades.map(grade => (
@@ -89,9 +94,14 @@ export function FilterPanel({ routes, initialFilters, onApplyFilters, onClose }:
                 <label className="block text-xs text-rock-300 mb-1">Max Grade</label>
                 <select
                   value={numericToGrade(localFilters.gradeRange[1])}
-                  onChange={(e) => updateFilters({
-                    gradeRange: [localFilters.gradeRange[0], gradeToNumeric(e.target.value)]
-                  })}
+                  onChange={(e) => {
+                    const newMaxGrade = gradeToNumeric(e.target.value)
+                    const currentMinGrade = localFilters.gradeRange[0]
+                    const adjustedMaxGrade = newMaxGrade < currentMinGrade ? currentMinGrade : newMaxGrade
+                    updateFilters({
+                      gradeRange: [currentMinGrade, adjustedMaxGrade]
+                    })
+                  }}
                   className="input-primary w-full"
                 >
                   {availableGrades.map(grade => (
@@ -190,9 +200,14 @@ export function FilterPanel({ routes, initialFilters, onApplyFilters, onClose }:
                   min="0"
                   max={maxPopularity}
                   value={localFilters.popularityRange[0]}
-                  onChange={(e) => updateFilters({
-                    popularityRange: [parseInt(e.target.value), localFilters.popularityRange[1]]
-                  })}
+                  onChange={(e) => {
+                    const newMinPopularity = parseInt(e.target.value)
+                    const currentMaxPopularity = localFilters.popularityRange[1]
+                    const newMaxPopularity = newMinPopularity > currentMaxPopularity ? newMinPopularity : currentMaxPopularity
+                    updateFilters({
+                      popularityRange: [newMinPopularity, newMaxPopularity]
+                    })
+                  }}
                   className="w-full"
                 />
               </div>
@@ -203,9 +218,14 @@ export function FilterPanel({ routes, initialFilters, onApplyFilters, onClose }:
                   min="0"
                   max={maxPopularity}
                   value={localFilters.popularityRange[1]}
-                  onChange={(e) => updateFilters({
-                    popularityRange: [localFilters.popularityRange[0], parseInt(e.target.value)]
-                  })}
+                  onChange={(e) => {
+                    const newMaxPopularity = parseInt(e.target.value)
+                    const currentMinPopularity = localFilters.popularityRange[0]
+                    const adjustedMaxPopularity = newMaxPopularity < currentMinPopularity ? currentMinPopularity : newMaxPopularity
+                    updateFilters({
+                      popularityRange: [currentMinPopularity, adjustedMaxPopularity]
+                    })
+                  }}
                   className="w-full"
                 />
               </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { MediaModal } from './MediaModal'
 import { RouteCard } from './RouteCard'
+import { getGradeColor } from '@/utils/gradeUtils'
 import type { Route } from '@/types'
 
 interface RouteListProps {
@@ -74,24 +75,6 @@ export function RouteList({ routes, projects, onToggleProject, onShowOnMap }: Ro
         alert(`Share this link: ${shareUrl}`)
       }
     }
-  }
-
-  const getGradeColor = (grade: string) => {
-    const colors = {
-      '2': 'bg-green-500', '2+': 'bg-green-500',
-      '3': 'bg-green-500', '3+': 'bg-green-500',
-      '4': 'bg-lime-500', '4+': 'bg-lime-500',
-      '5': 'bg-lime-500', '5+': 'bg-lime-500',
-      '6a': 'bg-yellow-500', '6a+': 'bg-yellow-500',
-      '6b': 'bg-orange-500', '6b+': 'bg-orange-500',
-      '6c': 'bg-red-500', '6c+': 'bg-red-500',
-      '7a': 'bg-red-600', '7a+': 'bg-red-600',
-      '7b': 'bg-red-700', '7b+': 'bg-red-700',
-      '7c': 'bg-red-800', '7c+': 'bg-red-800',
-      '8a': 'bg-orange-800', '8a+': 'bg-orange-800',
-      '8b': 'bg-orange-900', '8b+': 'bg-orange-900',
-    }
-    return colors[grade as keyof typeof colors] || 'bg-rock-500'
   }
 
   const getPopularityColor = (popularity: number) => {
