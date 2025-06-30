@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react'
-import { XMarkIcon, TrashIcon, ShareIcon, PlayIcon, MapPinIcon } from '@heroicons/react/24/outline'
+import { TrashIcon, ShareIcon, XMarkIcon } from '@heroicons/react/24/outline'
 import { BookmarkIcon } from '@heroicons/react/24/solid'
 import { motion } from 'framer-motion'
 import { MediaModal } from './MediaModal'
-import { AreaName } from './AreaName'
+import { RouteCard } from './RouteCard'
 import type { Route } from '@/types'
 
 interface ProjectListProps {
@@ -121,23 +121,7 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
     URL.revokeObjectURL(url);
   }
 
-  const getGradeColor = (grade: string) => {
-    const colors = {
-      '2': 'bg-green-500', '2+': 'bg-green-500',
-      '3': 'bg-green-500', '3+': 'bg-green-500',
-      '4': 'bg-lime-500', '4+': 'bg-lime-500',
-      '5': 'bg-lime-500', '5+': 'bg-lime-500',
-      '6a': 'bg-yellow-500', '6a+': 'bg-yellow-500',
-      '6b': 'bg-orange-500', '6b+': 'bg-orange-500',
-      '6c': 'bg-red-500', '6c+': 'bg-red-500',
-      '7a': 'bg-red-600', '7a+': 'bg-red-600',
-      '7b': 'bg-red-700', '7b+': 'bg-red-700',
-      '7c': 'bg-red-800', '7c+': 'bg-red-800',
-      '8a': 'bg-orange-800', '8a+': 'bg-orange-800',
-      '8b': 'bg-orange-900', '8b+': 'bg-orange-900',
-    }
-    return colors[grade as keyof typeof colors] || 'bg-rock-500'
-  }
+
 
   const openMediaModal = (route: Route) => {
     setSelectedRoute(route)
@@ -260,116 +244,16 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
               {projectRoutes
                 .sort((a, b) => b.popularity - a.popularity)
                 .map((route) => (
-                <div
-                  key={route.id}
-                  className="card p-3 hover:bg-rock-700 transition-colors cursor-pointer"
-                  onClick={(e) => {
-                    // Don't navigate if clicking on interactive elements
-                    if ((e.target as HTMLElement).closest('button, a')) {
-                      return
-                    }
-                    // Save scroll position before navigating
-                    const mainElement = document.querySelector('main')
-                    if (mainElement) {
-                      localStorage.setItem('scrollPosition', mainElement.scrollTop.toString())
-                    }
-                    // Navigate to route page
-                    window.location.href = `/route/${route.bleau_info_id}`
-                  }}
-                >
-                  <div className="flex justify-between items-start mb-2">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center space-x-2 mb-1">
-                        <h3 className="font-semibold text-white truncate">
-                          {route.name}
-                        </h3>
-                        <a
-                          href={`https://www.google.com/maps/dir/?api=1&destination=${route.latitude},${route.longitude}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-green-500 hover:text-green-400 transition-colors"
-                          title="Get directions to this problem"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <MapPinIcon className="w-3 h-3" />
-                        </a>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            handleShareRoute(route)
-                          }}
-                          className="text-rock-400 hover:text-white transition-colors"
-                          title="Share route"
-                        >
-                          <ShareIcon className="w-3 h-3" />
-                        </button>
-                      </div>
-                      <AreaName areaName={route.area_name} className="text-xs" />
-                    </div>
-                    
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onToggleProject(route.bleau_info_id)
-                      }}
-                      className="ml-2 p-1 text-yellow-500 hover:bg-yellow-500/10 rounded"
-                      title="Remove from projects"
-                    >
-                      <XMarkIcon className="w-4 h-4" />
-                    </button>
-                  </div>
-
-                  <div className="flex items-center justify-between text-xs mb-3">
-                    <span 
-                      className={`px-2 py-1 rounded text-white font-semibold ${getGradeColor(route.grade)}`}
-                    >
-                      {route.grade}
-                    </span>
-                    <span className="text-rock-400">
-                      {route.steepness}
-                    </span>
-                    <span className="text-rock-400">
-                      ★ {route.popularity}
-                    </span>
-                  </div>
-
-                  <div className="space-y-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        onShowOnMap(route)
-                      }}
-                      className="w-full bg-rock-600 hover:bg-rock-500 text-white text-center py-1 px-3 rounded text-xs transition-colors flex items-center justify-center space-x-1"
-                    >
-                      <MapPinIcon className="w-3 h-3" />
-                      <span>Show on Map</span>
-                    </button>
-                    {route.bleau_info_id && (
-                      <>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            openMediaModal(route)
-                          }}
-                          className="w-full bg-rock-600 hover:bg-rock-500 text-white text-center py-1 px-3 rounded text-xs transition-colors flex items-center justify-center space-x-1"
-                        >
-                          <PlayIcon className="w-3 h-3" />
-                          <span>View Media</span>
-                        </button>
-                        <a
-                          href={`https://bleau.info/${route.area_name.toLowerCase()}/${route.bleau_info_id}.html`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="block w-full bg-primary-600 hover:bg-primary-700 text-white text-center py-1 px-3 rounded text-xs transition-colors"
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          View on Bleau.info ↗
-                        </a>
-                      </>
-                    )}
-                  </div>
-                </div>
-              ))}
+                  <RouteCard
+                    key={route.id}
+                    route={route}
+                    projects={projects}
+                    onToggleProject={onToggleProject}
+                    onShowOnMap={onShowOnMap}
+                    onOpenMedia={openMediaModal}
+                    variant="compact"
+                  />
+                ))}
             </div>
           </>
         )}

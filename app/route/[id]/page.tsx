@@ -2,12 +2,11 @@
 
 import React, { useState, useEffect } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeftIcon, MapPinIcon, PlayIcon, ShareIcon, BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/outline'
-import { BookmarkIcon } from '@heroicons/react/24/solid'
+import { ArrowLeftIcon, PlayIcon } from '@heroicons/react/24/outline'
 import { MediaModal } from '@/components/MediaModal'
-import { AreaName } from '@/components/AreaName'
+import { RouteHeader } from '@/components/RouteHeader'
 import { RouteMap } from '@/components/RouteMap'
-import { gradeToNumeric } from '@/utils/gradeUtils'
+import { gradeToNumeric, getPopularityColor } from '@/utils/gradeUtils'
 import { loadJSON, saveJSON } from '@/utils/storage'
 import { getMediaFromBleauPage, createVideoHTML, createImageHTML } from '@/utils/mediaUtils'
 import type { Route } from '@/types'
@@ -137,30 +136,7 @@ export default function RoutePage() {
     setIsMediaModalOpen(false)
   }
 
-  const getGradeColor = (grade: string) => {
-    const colors = {
-      '2': 'bg-green-500', '2+': 'bg-green-500',
-      '3': 'bg-green-500', '3+': 'bg-green-500',
-      '4': 'bg-lime-500', '4+': 'bg-lime-500',
-      '5': 'bg-lime-500', '5+': 'bg-lime-500',
-      '6a': 'bg-yellow-500', '6a+': 'bg-yellow-500',
-      '6b': 'bg-orange-500', '6b+': 'bg-orange-500',
-      '6c': 'bg-red-500', '6c+': 'bg-red-500',
-      '7a': 'bg-red-600', '7a+': 'bg-red-600',
-      '7b': 'bg-red-700', '7b+': 'bg-red-700',
-      '7c': 'bg-red-800', '7c+': 'bg-red-800',
-      '8a': 'bg-orange-800', '8a+': 'bg-orange-800',
-      '8b': 'bg-orange-900', '8b+': 'bg-orange-900',
-    }
-    return colors[grade as keyof typeof colors] || 'bg-rock-500'
-  }
 
-  const getPopularityColor = (popularity: number) => {
-    if (popularity >= 80) return 'text-yellow-400'
-    if (popularity >= 60) return 'text-orange-400'
-    if (popularity >= 40) return 'text-blue-400'
-    return 'text-rock-400'
-  }
 
   if (loading) {
     return (
@@ -189,7 +165,7 @@ export default function RoutePage() {
     )
   }
 
-  const isProject = projects.has(route.bleau_info_id)
+
 
   return (
     <div className="min-h-screen bg-rock-900 flex flex-col">
@@ -223,62 +199,14 @@ export default function RoutePage() {
         <div className="max-w-6xl mx-auto p-6">
           <div className="bg-rock-800 rounded-lg p-6 mb-6">
             {/* Route Header with Share and Project buttons */}
-            <div className="flex items-start justify-between mb-6">
-              <div className="flex-1">
-                <h1 className="text-3xl font-bold text-white mb-2">{route.name}</h1>
-                <div className="flex items-center space-x-4 text-rock-300">
-                  <AreaName areaName={route.area_name} />
-                  <span>•</span>
-                  <span 
-                    className={`px-3 py-1 rounded text-white font-semibold ${getGradeColor(route.grade)}`}
-                  >
-                    {route.grade}
-                  </span>
-                  <span>•</span>
-                  <span className="capitalize">{route.steepness}</span>
-                </div>
-              </div>
-              
-              <div className="flex items-center space-x-2">
-                <a
-                  href={`https://www.google.com/maps/dir/?api=1&destination=${route.latitude},${route.longitude}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-green-500 hover:text-green-400 transition-colors p-2"
-                  title="Get directions to this problem"
-                >
-                  <MapPinIcon className="w-6 h-6" />
-                </a>
-                
-                <button
-                  onClick={handleShare}
-                  className={`p-2 rounded-lg transition-colors ${
-                    shareSuccess 
-                      ? 'bg-green-600 text-white' 
-                      : 'bg-rock-700 hover:bg-rock-600 text-rock-300 hover:text-white'
-                  }`}
-                  title="Share route"
-                >
-                  <ShareIcon className="w-5 h-5" />
-                </button>
-                
-                <button
-                  onClick={() => toggleProject(route.bleau_info_id)}
-                  className={`p-2 rounded-lg transition-colors ${
-                    isProject
-                      ? 'text-yellow-500 hover:bg-yellow-500/10'
-                      : 'text-rock-400 hover:text-white hover:bg-rock-600'
-                  }`}
-                  title={isProject ? 'Remove from projects' : 'Add to projects'}
-                >
-                  {isProject ? (
-                    <BookmarkSolidIcon className="w-5 h-5" />
-                  ) : (
-                    <BookmarkIcon className="w-5 h-5" />
-                  )}
-                </button>
-              </div>
-            </div>
+            <RouteHeader
+              route={route}
+              projects={projects}
+              onToggleProject={toggleProject}
+              onShare={handleShare}
+              shareSuccess={shareSuccess}
+              variant="page"
+            />
 
             {/* Route Details - Redesigned */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
