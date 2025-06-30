@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/solid'
-import { BookmarkIcon, LinkIcon, MapPinIcon, PlayIcon } from '@heroicons/react/24/outline'
+import { BookmarkIcon, LinkIcon, MapPinIcon, PlayIcon, ShareIcon } from '@heroicons/react/24/outline'
 import { MediaModal } from './MediaModal'
 import { AreaName } from './AreaName'
 import type { Route } from '@/types'
@@ -24,6 +24,58 @@ export function RouteList({ routes, projects, onToggleProject, onShowOnMap }: Ro
   const closeMediaModal = () => {
     setIsMediaModalOpen(false)
     setSelectedRoute(null)
+  }
+
+  const handleShareRoute = async (route: Route) => {
+    const shareUrl = `${window.location.origin}/route/${route.bleau_info_id}`
+    const shareText = `Check out this bouldering problem: ${route.name} (${route.grade}) in ${route.area_name}`
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${route.name} - Fontainebleau Route Finder`,
+          text: shareText,
+          url: shareUrl
+        })
+      } catch (error) {
+        console.error('Error sharing route:', error)
+        // Fallback to copying URL
+        try {
+          await navigator.clipboard.writeText(shareUrl)
+          // Show success feedback
+          const button = document.activeElement as HTMLElement
+          if (button) {
+            const originalText = button.innerHTML
+            button.innerHTML = '<span class="text-green-400">Copied!</span>'
+            setTimeout(() => {
+              button.innerHTML = originalText
+            }, 2000)
+          }
+        } catch (clipboardError) {
+          console.error('Error copying to clipboard:', clipboardError)
+          // Final fallback - show URL in alert
+          alert(`Share this link: ${shareUrl}`)
+        }
+      }
+    } else {
+      // Fallback to copying URL
+      try {
+        await navigator.clipboard.writeText(shareUrl)
+        // Show success feedback
+        const button = document.activeElement as HTMLElement
+        if (button) {
+          const originalText = button.innerHTML
+          button.innerHTML = '<span class="text-green-400">Copied!</span>'
+          setTimeout(() => {
+            button.innerHTML = originalText
+          }, 2000)
+        }
+      } catch (clipboardError) {
+        console.error('Error copying to clipboard:', clipboardError)
+        // Final fallback - show URL in alert
+        alert(`Share this link: ${shareUrl}`)
+      }
+    }
   }
 
   const getGradeColor = (grade: string) => {
@@ -73,9 +125,22 @@ export function RouteList({ routes, projects, onToggleProject, onShowOnMap }: Ro
           return (
             <div
               key={route.id}
-              className={`card p-4 hover:bg-rock-700 transition-colors ${
+              className={`card p-4 hover:bg-rock-700 transition-colors cursor-pointer ${
                 isProject ? 'ring-2 ring-yellow-500' : ''
               }`}
+              onClick={(e) => {
+                // Don't navigate if clicking on interactive elements
+                if ((e.target as HTMLElement).closest('button, a')) {
+                  return
+                }
+                // Save scroll position before navigating
+                const mainElement = document.querySelector('main')
+                if (mainElement) {
+                  localStorage.setItem('scrollPosition', mainElement.scrollTop.toString())
+                }
+                // Navigate to route page
+                window.location.href = `/route/${route.bleau_info_id}`
+              }}
             >
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1 min-w-0">
@@ -89,15 +154,29 @@ export function RouteList({ routes, projects, onToggleProject, onShowOnMap }: Ro
                       rel="noopener noreferrer"
                       className="text-green-500 hover:text-green-400 transition-colors"
                       title="Get directions to this problem"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <MapPinIcon className="w-4 h-4" />
                     </a>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        handleShareRoute(route)
+                      }}
+                      className="text-rock-400 hover:text-white transition-colors"
+                      title="Share route"
+                    >
+                      <ShareIcon className="w-4 h-4" />
+                    </button>
                   </div>
                   <AreaName areaName={route.area_name} />
                 </div>
                 
                 <button
-                  onClick={() => onToggleProject(route.bleau_info_id)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onToggleProject(route.bleau_info_id)
+                  }}
                   className={`ml-2 p-2 rounded-lg transition-colors ${
                     isProject
                       ? 'text-yellow-500 hover:bg-yellow-500/10'
@@ -147,17 +226,31 @@ export function RouteList({ routes, projects, onToggleProject, onShowOnMap }: Ro
 
               <div className="space-y-2">
                 <button
-                  onClick={() => onShowOnMap(route)}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    onShowOnMap(route)
+                  }}
                   className="btn-secondary w-full flex items-center justify-center space-x-2 text-sm"
                 >
                   <MapPinIcon className="w-4 h-4" />
                   <span>Show on Map</span>
                 </button>
 
+                <a
+                  href={`/route/${route.bleau_info_id}`}
+                  className="btn-secondary w-full flex items-center justify-center space-x-2 text-sm"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <span>View Details</span>
+                </a>
+
                 {route.bleau_info_id && (
                   <>
                     <button
-                      onClick={() => openMediaModal(route)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        openMediaModal(route)
+                      }}
                       className="btn-secondary w-full flex items-center justify-center space-x-2 text-sm"
                     >
                       <PlayIcon className="w-4 h-4" />
@@ -168,9 +261,10 @@ export function RouteList({ routes, projects, onToggleProject, onShowOnMap }: Ro
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn-primary w-full flex items-center justify-center space-x-2 text-sm"
+                      onClick={(e) => e.stopPropagation()}
                     >
                       <LinkIcon className="w-4 h-4" />
-                      <span>View Details</span>
+                      <span>View on Bleau.info</span>
                     </a>
                   </>
                 )}

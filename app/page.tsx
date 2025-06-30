@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useState, useEffect, useMemo, useRef } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { FilterPanel } from '@/components/FilterPanel'
 import { RouteList } from '@/components/RouteList'
 import { Header } from '@/components/Header'
@@ -21,6 +22,7 @@ const defaultFilters: FilterState = {
 }
 
 export default function Home() {
+  const searchParams = useSearchParams()
   const [routes, setRoutes] = useState<Route[]>([])
   const [areas, setAreas] = useState<any>(null)
   const [filters, setFilters] = useState<FilterState>(() => loadJSON('filters', defaultFilters))
@@ -35,6 +37,76 @@ export default function Home() {
   const [routesForMapModal, setRoutesForMapModal] = useState<Route[]>([])
 
   const isInitialMount = useRef(true)
+  const mainRef = useRef<HTMLDivElement>(null)
+
+  // Handle URL parameters for direct route links
+  useEffect(() => {
+    if (routes.length === 0) return // Wait for routes to load
+    
+    const routeId = searchParams.get('route')
+    const projectsParam = searchParams.get('projects')
+    
+    if (routeId) {
+      const targetRoute = routes.find(route => route.bleau_info_id === routeId)
+      if (targetRoute) {
+        // Redirect to dedicated route page
+        window.location.href = `/route/${routeId}`
+        return
+      }
+    }
+    
+    if (projectsParam) {
+      // Handle sharing multiple projects
+      const projectIds = projectsParam.split(',').filter(id => id.trim())
+      if (projectIds.length > 0) {
+        // Add these routes to projects
+        const newProjects = new Set(projects)
+        projectIds.forEach(id => newProjects.add(id))
+        setProjects(newProjects)
+        
+        // Show the projects panel
+        setShowProjects(true)
+      }
+    }
+  }, [routes, searchParams, projects])
+
+  // Save scroll position when navigating away
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (mainRef.current) {
+        saveJSON('scrollPosition', mainRef.current.scrollTop)
+      }
+    }
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden' && mainRef.current) {
+        saveJSON('scrollPosition', mainRef.current.scrollTop)
+      }
+    }
+
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [])
+
+  // Restore scroll position when component mounts
+  useEffect(() => {
+    if (!loading && mainRef.current) {
+      const savedPosition = loadJSON('scrollPosition', 0)
+      if (savedPosition > 0) {
+        // Use setTimeout to ensure the content is rendered
+        setTimeout(() => {
+          if (mainRef.current) {
+            mainRef.current.scrollTop = savedPosition
+          }
+        }, 100)
+      }
+    }
+  }, [loading])
 
   const handleApplyFilters = (newFilters: FilterState) => {
     setFilters(newFilters)
@@ -231,7 +303,7 @@ export default function Home() {
           )}
         </AnimatePresence>
 
-        <main className="flex-1 flex flex-col overflow-y-auto">
+        <main ref={mainRef} className="flex-1 flex flex-col overflow-y-auto">
           <div className="bg-rock-900 flex-grow">
             <RouteList
               routes={filteredRoutes}

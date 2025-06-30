@@ -39,6 +39,10 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
 
   const projectRoutes = routes.filter(route => projects.has(route.bleau_info_id))
   
+  const generateShareableUrl = (route: Route) => {
+    return `${window.location.origin}/route/${route.bleau_info_id}`
+  }
+  
   const clearAllProjects = () => {
     projectRoutes.forEach(route => onToggleProject(route.bleau_info_id))
   }
@@ -56,7 +60,8 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
             `- **Area:** ${route.area_name}\n` +
             `- **Style:** ${route.steepness}\n` +
             `- **Popularity:** ${'★'.repeat(filledStars)}${'☆'.repeat(emptyStars)}\n` +
-            `- **Link:** [${route.name} on Bleau.info](https://bleau.info/${route.area_name.toLowerCase()}/${route.bleau_info_id}.html)`
+            `- **App Link:** [${route.name} on Fontainebleau Route Finder](${generateShareableUrl(route)})\n` +
+            `- **Details:** [${route.name} on Bleau.info](https://bleau.info/${route.area_name.toLowerCase()}/${route.bleau_info_id}.html)`
         })
         .join('\n\n');
 
@@ -73,9 +78,16 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
           text: shareText,
         }
 
-        // Add URL if we have projects
+        // Add URL if we have projects - use app URL instead of bleau.info
         if (projectRoutes.length > 0) {
-          shareData.url = `https://bleau.info/${projectRoutes[0].area_name.toLowerCase()}/${projectRoutes[0].bleau_info_id}.html`
+          if (projectRoutes.length === 1) {
+            // Single route: link directly to that route
+            shareData.url = generateShareableUrl(projectRoutes[0])
+          } else {
+            // Multiple routes: link to the app with all routes as projects
+            const projectIds = Array.from(projects).join(',')
+            shareData.url = `${window.location.origin}/?projects=${projectIds}`
+          }
         }
 
         // Try to share files if supported
@@ -135,6 +147,58 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
   const closeMediaModal = () => {
     setIsMediaModalOpen(false)
     setSelectedRoute(null)
+  }
+
+  const handleShareRoute = async (route: Route) => {
+    const shareUrl = generateShareableUrl(route)
+    const shareText = `Check out this bouldering problem: ${route.name} (${route.grade}) in ${route.area_name}`
+    
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: `${route.name} - Fontainebleau Route Finder`,
+          text: shareText,
+          url: shareUrl
+        })
+      } catch (error) {
+        console.error('Error sharing route:', error)
+        // Fallback to copying URL
+        try {
+          await navigator.clipboard.writeText(shareUrl)
+          // Show success feedback
+          const button = document.activeElement as HTMLElement
+          if (button) {
+            const originalText = button.innerHTML
+            button.innerHTML = '<span class="text-green-400">Copied!</span>'
+            setTimeout(() => {
+              button.innerHTML = originalText
+            }, 2000)
+          }
+        } catch (clipboardError) {
+          console.error('Error copying to clipboard:', clipboardError)
+          // Final fallback - show URL in alert
+          alert(`Share this link: ${shareUrl}`)
+        }
+      }
+    } else {
+      // Fallback to copying URL
+      try {
+        await navigator.clipboard.writeText(shareUrl)
+        // Show success feedback
+        const button = document.activeElement as HTMLElement
+        if (button) {
+          const originalText = button.innerHTML
+          button.innerHTML = '<span class="text-green-400">Copied!</span>'
+          setTimeout(() => {
+            button.innerHTML = originalText
+          }, 2000)
+        }
+      } catch (clipboardError) {
+        console.error('Error copying to clipboard:', clipboardError)
+        // Final fallback - show URL in alert
+        alert(`Share this link: ${shareUrl}`)
+      }
+    }
   }
 
   return (
@@ -198,7 +262,20 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
                 .map((route) => (
                 <div
                   key={route.id}
-                  className="card p-3 hover:bg-rock-700 transition-colors"
+                  className="card p-3 hover:bg-rock-700 transition-colors cursor-pointer"
+                  onClick={(e) => {
+                    // Don't navigate if clicking on interactive elements
+                    if ((e.target as HTMLElement).closest('button, a')) {
+                      return
+                    }
+                    // Save scroll position before navigating
+                    const mainElement = document.querySelector('main')
+                    if (mainElement) {
+                      localStorage.setItem('scrollPosition', mainElement.scrollTop.toString())
+                    }
+                    // Navigate to route page
+                    window.location.href = `/route/${route.bleau_info_id}`
+                  }}
                 >
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex-1 min-w-0">
@@ -212,15 +289,29 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
                           rel="noopener noreferrer"
                           className="text-green-500 hover:text-green-400 transition-colors"
                           title="Get directions to this problem"
+                          onClick={(e) => e.stopPropagation()}
                         >
                           <MapPinIcon className="w-3 h-3" />
                         </a>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleShareRoute(route)
+                          }}
+                          className="text-rock-400 hover:text-white transition-colors"
+                          title="Share route"
+                        >
+                          <ShareIcon className="w-3 h-3" />
+                        </button>
                       </div>
                       <AreaName areaName={route.area_name} className="text-xs" />
                     </div>
                     
                     <button
-                      onClick={() => onToggleProject(route.bleau_info_id)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onToggleProject(route.bleau_info_id)
+                      }}
                       className="ml-2 p-1 text-yellow-500 hover:bg-yellow-500/10 rounded"
                       title="Remove from projects"
                     >
@@ -244,7 +335,10 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
 
                   <div className="space-y-2">
                     <button
-                      onClick={() => onShowOnMap(route)}
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onShowOnMap(route)
+                      }}
                       className="w-full bg-rock-600 hover:bg-rock-500 text-white text-center py-1 px-3 rounded text-xs transition-colors flex items-center justify-center space-x-1"
                     >
                       <MapPinIcon className="w-3 h-3" />
@@ -253,7 +347,10 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
                     {route.bleau_info_id && (
                       <>
                         <button
-                          onClick={() => openMediaModal(route)}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            openMediaModal(route)
+                          }}
                           className="w-full bg-rock-600 hover:bg-rock-500 text-white text-center py-1 px-3 rounded text-xs transition-colors flex items-center justify-center space-x-1"
                         >
                           <PlayIcon className="w-3 h-3" />
@@ -264,8 +361,9 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
                           target="_blank"
                           rel="noopener noreferrer"
                           className="block w-full bg-primary-600 hover:bg-primary-700 text-white text-center py-1 px-3 rounded text-xs transition-colors"
+                          onClick={(e) => e.stopPropagation()}
                         >
-                          View Details ↗
+                          View on Bleau.info ↗
                         </a>
                       </>
                     )}
