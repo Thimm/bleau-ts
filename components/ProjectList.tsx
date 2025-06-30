@@ -202,9 +202,20 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
                 >
                   <div className="flex justify-between items-start mb-2">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-white truncate">
-                        {route.name}
-                      </h3>
+                      <div className="flex items-center space-x-2 mb-1">
+                        <h3 className="font-semibold text-white truncate">
+                          {route.name}
+                        </h3>
+                        <a
+                          href={`https://www.google.com/maps/dir/?api=1&destination=${route.latitude},${route.longitude}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-green-500 hover:text-green-400 transition-colors"
+                          title="Get directions to this problem"
+                        >
+                          <MapPinIcon className="w-3 h-3" />
+                        </a>
+                      </div>
                       <AreaName areaName={route.area_name} className="text-xs" />
                     </div>
                     
@@ -231,32 +242,34 @@ export function ProjectList({ routes, projects, onToggleProject, onClose, onShow
                     </span>
                   </div>
 
-                  {route.bleau_info_id && (
-                    <div className="space-y-2">
-                      <button
-                        onClick={() => onShowOnMap(route)}
-                        className="w-full bg-rock-600 hover:bg-rock-500 text-white text-center py-1 px-3 rounded text-xs transition-colors flex items-center justify-center space-x-1"
-                      >
-                        <MapPinIcon className="w-3 h-3" />
-                        <span>Show on Map</span>
-                      </button>
-                      <button
-                        onClick={() => openMediaModal(route)}
-                        className="w-full bg-rock-600 hover:bg-rock-500 text-white text-center py-1 px-3 rounded text-xs transition-colors flex items-center justify-center space-x-1"
-                      >
-                        <PlayIcon className="w-3 h-3" />
-                        <span>View Media</span>
-                      </button>
-                      <a
-                        href={`https://bleau.info/${route.area_name.toLowerCase()}/${route.bleau_info_id}.html`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="block w-full bg-primary-600 hover:bg-primary-700 text-white text-center py-1 px-3 rounded text-xs transition-colors"
-                      >
-                        View Details ↗
-                      </a>
-                    </div>
-                  )}
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => onShowOnMap(route)}
+                      className="w-full bg-rock-600 hover:bg-rock-500 text-white text-center py-1 px-3 rounded text-xs transition-colors flex items-center justify-center space-x-1"
+                    >
+                      <MapPinIcon className="w-3 h-3" />
+                      <span>Show on Map</span>
+                    </button>
+                    {route.bleau_info_id && (
+                      <>
+                        <button
+                          onClick={() => openMediaModal(route)}
+                          className="w-full bg-rock-600 hover:bg-rock-500 text-white text-center py-1 px-3 rounded text-xs transition-colors flex items-center justify-center space-x-1"
+                        >
+                          <PlayIcon className="w-3 h-3" />
+                          <span>View Media</span>
+                        </button>
+                        <a
+                          href={`https://bleau.info/${route.area_name.toLowerCase()}/${route.bleau_info_id}.html`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="block w-full bg-primary-600 hover:bg-primary-700 text-white text-center py-1 px-3 rounded text-xs transition-colors"
+                        >
+                          View Details ↗
+                        </a>
+                      </>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>

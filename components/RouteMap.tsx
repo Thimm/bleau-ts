@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useImperativeHandle, forwardRef } from 'react
 import { MapContainer, TileLayer, Marker, Popup, Rectangle, useMap, CircleMarker } from 'react-leaflet'
 import MarkerClusterGroup from 'react-leaflet-cluster'
 import { Icon, LatLngBounds } from 'leaflet'
+import { MapPinIcon } from '@heroicons/react/24/outline'
 import 'leaflet/dist/leaflet.css'
 import type { Route, AreasData } from '@/types'
 
@@ -155,8 +156,8 @@ export const RouteMap = forwardRef<RouteMapRef, RouteMapProps>(
           <MapReadyHandler onMapReady={onMapReady} />
           
           <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            attribution='&copy; <a href="https://www.google.com/maps">Google Maps</a>'
+            url="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}"
           />
           
           <MapBounds routes={routes} />
@@ -186,7 +187,18 @@ export const RouteMap = forwardRef<RouteMapRef, RouteMapProps>(
                   <Popup>
                     <div className="text-black min-w-[200px]">
                       <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-bold text-lg">{route.name}</h3>
+                        <div className="flex items-center space-x-2">
+                          <h3 className="font-bold text-lg">{route.name}</h3>
+                          <a
+                            href={`https://www.google.com/maps/dir/?api=1&destination=${route.latitude},${route.longitude}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-green-500 hover:text-green-600 transition-colors"
+                            title="Get directions to this problem"
+                          >
+                            <MapPinIcon className="w-4 h-4" />
+                          </a>
+                        </div>
                         <button
                           onClick={() => onToggleProject(route.bleau_info_id)}
                           className={`ml-2 px-2 py-1 rounded text-xs ${
@@ -251,14 +263,16 @@ export const RouteMap = forwardRef<RouteMapRef, RouteMapProps>(
                       </div>
                       
                       {route.bleau_info_id && (
-                        <a
-                          href={`https://bleau.info/${route.area_name.toLowerCase()}/${route.bleau_info_id}.html`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-block w-full bg-blue-600 text-white text-center py-2 px-4 rounded hover:bg-blue-700 transition-colors"
-                        >
-                          View on Bleau.info ↗
-                        </a>
+                        <div className="mt-3">
+                          <a
+                            href={`https://bleau.info/${route.area_name.toLowerCase()}/${route.bleau_info_id}.html`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block w-full bg-blue-600 text-white text-center py-2 px-4 rounded hover:bg-blue-700 transition-colors text-sm"
+                          >
+                            View on Bleau.info ↗
+                          </a>
+                        </div>
                       )}
                     </div>
                   </Popup>

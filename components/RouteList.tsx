@@ -79,9 +79,20 @@ export function RouteList({ routes, projects, onToggleProject, onShowOnMap }: Ro
             >
               <div className="flex justify-between items-start mb-3">
                 <div className="flex-1 min-w-0">
-                  <h3 className="font-semibold text-white truncate text-lg">
-                    {route.name}
-                  </h3>
+                  <div className="flex items-center space-x-2 mb-1">
+                    <h3 className="font-semibold text-white truncate text-lg">
+                      {route.name}
+                    </h3>
+                    <a
+                      href={`https://www.google.com/maps/dir/?api=1&destination=${route.latitude},${route.longitude}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-green-500 hover:text-green-400 transition-colors"
+                      title="Get directions to this problem"
+                    >
+                      <MapPinIcon className="w-4 h-4" />
+                    </a>
+                  </div>
                   <AreaName areaName={route.area_name} />
                 </div>
                 
