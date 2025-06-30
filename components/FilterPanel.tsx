@@ -75,14 +75,9 @@ export function FilterPanel({ routes, initialFilters, onApplyFilters, onClose }:
                 <label className="block text-xs text-rock-300 mb-1">Min Grade</label>
                 <select
                   value={numericToGrade(localFilters.gradeRange[0])}
-                  onChange={(e) => {
-                    const newMinGrade = gradeToNumeric(e.target.value)
-                    const currentMaxGrade = localFilters.gradeRange[1]
-                    const newMaxGrade = newMinGrade > currentMaxGrade ? newMinGrade : currentMaxGrade
-                    updateFilters({
-                      gradeRange: [newMinGrade, newMaxGrade]
-                    })
-                  }}
+                  onChange={(e) => updateFilters({
+                    gradeRange: [gradeToNumeric(e.target.value), localFilters.gradeRange[1]]
+                  })}
                   className="input-primary w-full"
                 >
                   {availableGrades.map(grade => (
@@ -94,14 +89,9 @@ export function FilterPanel({ routes, initialFilters, onApplyFilters, onClose }:
                 <label className="block text-xs text-rock-300 mb-1">Max Grade</label>
                 <select
                   value={numericToGrade(localFilters.gradeRange[1])}
-                  onChange={(e) => {
-                    const newMaxGrade = gradeToNumeric(e.target.value)
-                    const currentMinGrade = localFilters.gradeRange[0]
-                    const adjustedMaxGrade = newMaxGrade < currentMinGrade ? currentMinGrade : newMaxGrade
-                    updateFilters({
-                      gradeRange: [currentMinGrade, adjustedMaxGrade]
-                    })
-                  }}
+                  onChange={(e) => updateFilters({
+                    gradeRange: [localFilters.gradeRange[0], gradeToNumeric(e.target.value)]
+                  })}
                   className="input-primary w-full"
                 >
                   {availableGrades.map(grade => (
@@ -200,14 +190,9 @@ export function FilterPanel({ routes, initialFilters, onApplyFilters, onClose }:
                   min="0"
                   max={maxPopularity}
                   value={localFilters.popularityRange[0]}
-                  onChange={(e) => {
-                    const newMinPopularity = parseInt(e.target.value)
-                    const currentMaxPopularity = localFilters.popularityRange[1]
-                    const newMaxPopularity = newMinPopularity > currentMaxPopularity ? newMinPopularity : currentMaxPopularity
-                    updateFilters({
-                      popularityRange: [newMinPopularity, newMaxPopularity]
-                    })
-                  }}
+                  onChange={(e) => updateFilters({
+                    popularityRange: [parseInt(e.target.value), localFilters.popularityRange[1]]
+                  })}
                   className="w-full"
                 />
               </div>
@@ -218,14 +203,9 @@ export function FilterPanel({ routes, initialFilters, onApplyFilters, onClose }:
                   min="0"
                   max={maxPopularity}
                   value={localFilters.popularityRange[1]}
-                  onChange={(e) => {
-                    const newMaxPopularity = parseInt(e.target.value)
-                    const currentMinPopularity = localFilters.popularityRange[0]
-                    const adjustedMaxPopularity = newMaxPopularity < currentMinPopularity ? currentMinPopularity : newMaxPopularity
-                    updateFilters({
-                      popularityRange: [currentMinPopularity, adjustedMaxPopularity]
-                    })
-                  }}
+                  onChange={(e) => updateFilters({
+                    popularityRange: [localFilters.popularityRange[0], parseInt(e.target.value)]
+                  })}
                   className="w-full"
                 />
               </div>
