@@ -76,20 +76,20 @@ export function MediaModal({ route, isOpen, onClose }: MediaModalProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/80 z-[10000] flex items-center justify-center p-4 pt-20 sm:pt-4"
+          className="fixed inset-0 bg-black/80 z-[10000] flex items-center justify-center p-2 sm:p-4"
           onClick={onClose}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-rock-800 rounded-lg max-w-5xl w-full max-h-[90vh] flex flex-col relative"
+            className="bg-rock-800 rounded-lg max-w-5xl w-full h-[95vh] sm:h-auto sm:max-h-[90vh] flex flex-col relative"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 border-b border-rock-700 shrink-0">
+            <div className="p-3 sm:p-4 border-b border-rock-700 shrink-0">
               <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-white">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base sm:text-lg font-semibold text-white truncate">
                     {route?.name}
                   </h3>
                   <div className="flex items-center space-x-1 text-sm">
@@ -100,30 +100,30 @@ export function MediaModal({ route, isOpen, onClose }: MediaModalProps) {
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-rock-700 rounded-lg transition-colors"
+                  className="p-2 hover:bg-rock-700 rounded-lg transition-colors ml-2 flex-shrink-0"
                 >
                   <XMarkIcon className="w-5 h-5 text-white" />
                 </button>
               </div>
             </div>
 
-            <div className="py-4 overflow-y-auto">
+            <div className="py-2 sm:py-4 overflow-y-auto flex-1">
               {loading && (
-                <div className="text-center py-8 px-4">
+                <div className="text-center py-6 sm:py-8 px-2 sm:px-4">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500 mx-auto mb-4"></div>
                   <p className="text-rock-300">Loading topo and media...</p>
                 </div>
               )}
 
               {error && (
-                <div className="text-center py-8 px-4">
+                <div className="text-center py-6 sm:py-8 px-2 sm:px-4">
                   <p className="text-red-400 mb-2">Error loading data</p>
                   <p className="text-rock-400 text-sm">{error}</p>
                 </div>
               )}
 
               {!loading && !error && !hasTopo && !hasMedia && (
-                <div className="text-center py-8 px-4">
+                <div className="text-center py-6 sm:py-8 px-2 sm:px-4">
                   <div className="text-rock-600 mb-4">
                     <PhotoIcon className="w-16 h-16 mx-auto" />
                   </div>
@@ -135,7 +135,7 @@ export function MediaModal({ route, isOpen, onClose }: MediaModalProps) {
               )}
 
               {!loading && !error && (hasTopo || hasMedia) && (
-                <div className="space-y-4 px-4">
+                <div className="space-y-4 px-2 sm:px-4">
                   {/* Topo Image - Always shown first */}
                   {hasTopo && (
                     <div>
@@ -152,7 +152,7 @@ export function MediaModal({ route, isOpen, onClose }: MediaModalProps) {
                         <img
                           src={topoInfo.image_url}
                           alt={`Topo for ${route?.name}`}
-                          className="w-full h-auto max-h-96 object-contain"
+                          className="w-full h-auto max-h-[60vh] sm:max-h-96 object-contain"
                           onError={(e) => {
                             console.error('Failed to load topo image:', topoInfo.image_url)
                             e.currentTarget.style.display = 'none'
@@ -204,6 +204,7 @@ export function MediaModal({ route, isOpen, onClose }: MediaModalProps) {
                         dangerouslySetInnerHTML={{
                           __html: createVideoHTML(mediaInfo.video)
                         }}
+                        className="rounded-lg overflow-hidden max-w-full"
                       />
                     </div>
                   )}
@@ -218,6 +219,7 @@ export function MediaModal({ route, isOpen, onClose }: MediaModalProps) {
                         dangerouslySetInnerHTML={{
                           __html: createImageHTML(mediaInfo.image)
                         }}
+                        className="rounded-lg overflow-hidden max-w-full"
                       />
                     </div>
                   )}
@@ -225,7 +227,7 @@ export function MediaModal({ route, isOpen, onClose }: MediaModalProps) {
               )}
 
               {route?.bleau_info_id && (
-                <div className="mt-6 pt-4 border-t border-rock-700 px-4">
+                <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t border-rock-700 px-2 sm:px-4">
                   <a
                     href={`https://bleau.info/${route.area_name.toLowerCase()}/${route.bleau_info_id}.html`}
                     target="_blank"

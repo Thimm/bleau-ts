@@ -28,20 +28,20 @@ export function MapModal({ routes, areas, isOpen, onClose }: MapModalProps) {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/80 z-[10000] flex items-center justify-center p-4 pt-20 sm:pt-4"
+          className="fixed inset-0 bg-black/80 z-[10000] flex items-center justify-center p-2 sm:p-4"
           onClick={onClose}
         >
           <motion.div
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
-            className="bg-rock-800 rounded-lg max-w-4xl w-full h-[80vh] overflow-hidden flex flex-col relative"
+            className="bg-rock-800 rounded-lg max-w-4xl w-full h-[95vh] sm:h-[80vh] overflow-hidden flex flex-col relative"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="p-4 border-b border-rock-700 shrink-0">
+            <div className="p-3 sm:p-4 border-b border-rock-700 shrink-0">
               <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-lg font-semibold text-white">
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-base sm:text-lg font-semibold text-white truncate">
                     {title}
                   </h3>
                   <p className="text-rock-300 text-sm">
@@ -50,7 +50,7 @@ export function MapModal({ routes, areas, isOpen, onClose }: MapModalProps) {
                 </div>
                 <button
                   onClick={onClose}
-                  className="p-2 hover:bg-rock-700 rounded-lg transition-colors"
+                  className="p-2 hover:bg-rock-700 rounded-lg transition-colors ml-2 flex-shrink-0"
                 >
                   <XMarkIcon className="w-5 h-5 text-white" />
                 </button>
