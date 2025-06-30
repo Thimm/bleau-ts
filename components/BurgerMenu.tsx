@@ -153,6 +153,21 @@ export function BurgerMenu({}: BurgerMenuProps) {
                   <span>Send Feedback</span>
                 </button>
                 
+                <a
+                  href="https://buymeacoffee.com/thimm"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => setIsOpen(false)}
+                  className="w-full flex items-center space-x-3 px-3 py-2 rounded-lg text-sm transition-colors text-rock-300 hover:bg-rock-700 hover:text-white"
+                >
+                  <div className="w-5 h-5 flex items-center justify-center">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v13m0-13V6a2 2 0 112 2h-2zm0 0V5.5A2.5 2.5 0 109.5 8H12zm-7 4h14M5 12a2 2 0 110-4h14a2 2 0 110 4M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7" />
+                    </svg>
+                  </div>
+                  <span>Buy me a coffee</span>
+                </a>
+                
                 <Link
                   href="/thank-you"
                   onClick={() => setIsOpen(false)}
